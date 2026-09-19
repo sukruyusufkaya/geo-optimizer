@@ -1,11 +1,8 @@
 name: Publish scheduled Sanity articles
 
 on:
-  # Upstream publishes from Sanity on a */10 cron. This copy has no
-  # SANITY_API_TOKEN, so the schedule could only produce a failing run every
-  # ten minutes -- and the dataset it would write to is not ours. Manual
-  # dispatch is kept so the workflow still works once this deployment has
-  # its own Sanity project and secrets.
+  schedule:
+    - cron: '*/10 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
