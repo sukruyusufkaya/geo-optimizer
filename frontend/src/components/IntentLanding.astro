@@ -1,0 +1,342 @@
+---
+import Shell from './Shell.astro';
+
+type Cta = {
+  href: string;
+  label: string;
+  dataCta: string;
+  variant?: 'primary' | 'secondary';
+};
+
+type Stat = {
+  value: string;
+  label: string;
+  detail: string;
+};
+
+type TableRow = {
+  signal: string;
+  freeCheck: string;
+  paidLoop: string;
+};
+
+type Faq = {
+  q: string;
+  a: string;
+};
+
+type PaidStep = {
+  heading: string;
+  copy: string;
+  proofPoints: string[];
+  plan: {
+    id: 'pro' | 'studio' | 'agency';
+    name: 'Pro' | 'Studio' | 'Agency';
+    price: '$19' | '$49' | '$89';
+    period: 'monthly';
+    href: string;
+    cta: string;
+    ctaLocation: string;
+    intent: string;
+  };
+  secondary?: Cta;
+};
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  eyebrow: string;
+  badge: string;
+  h1: string;
+  lede: string;
+  dateModified: string;
+  primaryCta: Cta;
+  secondaryCta: Cta;
+  stats: Stat[];
+  tableHeading: string;
+  tableIntro: string;
+  tableRows: TableRow[];
+  faqs: Faq[];
+  paidStep?: PaidStep;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  eyebrow,
+  badge,
+  h1,
+  lede,
+  dateModified,
+  primaryCta,
+  secondaryCta,
+  stats,
+  tableHeading,
+  tableIntro,
+  tableRows,
+  faqs,
+  paidStep,
+} = Astro.props;
+
+const offerCatalog = {
+  '@type': 'OfferCatalog',
+  name: 'GeoReady plans for AI visibility work',
+  itemListElement: [
+    {
+      '@type': 'Offer',
+      name: 'Free AI SEO audit',
+      price: '0',
+      priceCurrency: 'USD',
+      url: canonical,
+      availability: 'https://schema.org/InStock',
+    },
+    {
+      '@type': 'Offer',
+      name: 'GeoReady Pro',
+      price: '19',
+      priceCurrency: 'USD',
+      url: 'https://app.geoready.dev/signup?plan=pro',
+      availability: 'https://schema.org/InStock',
+    },
+    {
+      '@type': 'Offer',
+      name: 'GeoReady Studio',
+      price: '49',
+      priceCurrency: 'USD',
+      url: 'https://app.geoready.dev/signup?plan=studio',
+      availability: 'https://schema.org/InStock',
+    },
+  ],
+};
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+  {
+    '@type': 'WebPage',
+    '@id': `${canonical}#webpage`,
+    url: canonical,
+    name: title,
+    description,
+    dateModified,
+    mainEntity: { '@id': `${canonical}#service` },
+    publisher: {
+      '@type': 'Organization',
+      name: 'GeoReady',
+      url: 'https://geoready.dev/',
+    },
+    isPartOf: { '@id': 'https://geoready.dev/#website' },
+  },
+  {
+    '@type': 'Service',
+    '@id': `${canonical}#service`,
+    name: h1,
+    description,
+    serviceType: eyebrow,
+    areaServed: 'Worldwide',
+    provider: {
+      '@type': 'Organization',
+      name: 'GeoReady',
+      url: 'https://geoready.dev/',
+    },
+    hasOfferCatalog: offerCatalog,
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'GeoReady', item: 'https://geoready.dev/' },
+      { '@type': 'ListItem', position: 2, name: eyebrow, item: canonical },
+    ],
+  },
+] };
+
+const primaryClass =
+  'inline-flex min-h-11 items-center justify-center rounded-[4px] bg-pass-deep px-6 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-pass';
+const secondaryClass =
+  'inline-flex min-h-11 items-center justify-center rounded-[4px] border border-rail bg-white px-6 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-pass-wash';
+---
+
+<Shell title={title} description={description} canonical={canonical}>
+  <article class="bg-paper font-text text-ink">
+    {/* Hero band — paper ground, breadcrumb on the heading's baseline row */}
+    <header class="border-b border-rail">
+      <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
+        <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.72fr)] lg:gap-14">
+          <div>
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <h1 class="max-w-3xl font-head text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink md:text-5xl">
+                {h1}
+              </h1>
+              <p class="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">
+                <a href="/" class="transition-colors hover:text-ink">GeoReady</a>
+                <span aria-hidden="true">/</span>
+                <span>{eyebrow}</span>
+              </p>
+            </div>
+
+            <p class="mt-4">
+              <span class="inline-flex rounded-[2px] border border-rail bg-white px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-mute">
+                {badge}
+              </span>
+            </p>
+
+            <p class="mt-5 max-w-3xl text-base leading-relaxed text-ink-soft md:text-lg">
+              {lede}
+            </p>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a href={primaryCta.href} data-cta={primaryCta.dataCta} class={primaryClass}>
+                {primaryCta.label}
+              </a>
+              <a href={secondaryCta.href} data-cta={secondaryCta.dataCta} class={secondaryClass}>
+                {secondaryCta.label}
+              </a>
+            </div>
+
+            <dl class="mt-8 grid gap-3 sm:grid-cols-3">
+              {stats.map((item) => (
+                <div class="border-l border-rail pl-4">
+                  <dt class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">{item.value}</dt>
+                  <dd class="mt-1 text-sm font-semibold text-ink">{item.label}</dd>
+                  <dd class="mt-1 text-sm leading-relaxed text-ink-soft">{item.detail}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <aside class="w-full">
+            <slot name="heroAside" />
+          </aside>
+        </div>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-7xl space-y-14 px-4 py-14 sm:px-6 md:space-y-16 md:py-16 [&_h2]:font-head [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:leading-tight [&_h2]:tracking-[-0.02em] [&_h2]:text-ink [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-ink [&_p]:leading-relaxed [&_p]:text-ink-soft [&_li]:leading-relaxed [&_li]:text-ink-soft">
+      <slot />
+
+      <section aria-labelledby="decision-table-heading">
+        <div class="max-w-3xl">
+          <h2 id="decision-table-heading">{tableHeading}</h2>
+          <p class="mt-4">{tableIntro}</p>
+        </div>
+
+        <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
+          <table class="min-w-full border-collapse text-left text-sm">
+            <thead class="bg-paper">
+              <tr>
+                <th scope="col" class="border-b border-rail px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Signal or question</th>
+                <th scope="col" class="border-b border-rail px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">What the free check gives you</th>
+                <th scope="col" class="border-b border-rail px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">When paid monitoring matters</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rail">
+              {tableRows.map((row) => (
+                <tr>
+                  <th scope="row" class="px-4 py-3 align-top text-sm font-semibold text-ink">{row.signal}</th>
+                  <td class="px-4 py-3 align-top text-ink-soft">{row.freeCheck}</td>
+                  <td class="px-4 py-3 align-top text-ink-soft">{row.paidLoop}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {paidStep && (
+        <section aria-labelledby="paid-path-heading" class="overflow-hidden rounded-[4px] border border-rail bg-white">
+          <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-rail px-6 py-2.5 md:px-8">
+            <span class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Free check to paid loop</span>
+            <span class="rounded-[2px] bg-pass-wash px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-pass-deep">{paidStep.plan.name}</span>
+          </div>
+          <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.42fr)]">
+            <div class="p-6 md:p-8">
+              <h2 id="paid-path-heading">{paidStep.heading}</h2>
+              <p class="mt-4">{paidStep.copy}</p>
+              <ul class="mt-5 grid gap-3 md:grid-cols-3" role="list">
+                {paidStep.proofPoints.map((point) => (
+                  <li class="border-l border-rail pl-3 text-sm">{point}</li>
+                ))}
+              </ul>
+            </div>
+            <aside class="border-t border-rail bg-paper p-6 md:p-8 lg:border-l lg:border-t-0">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <p><span class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink">{paidStep.plan.name}</span></p>
+                <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">Recommended plan</span>
+              </div>
+              <p class="mt-1 text-sm">
+                <span class="font-mono tabular-nums text-ink">{paidStep.plan.price}</span> / month
+              </p>
+              <p class="mt-4 text-sm leading-relaxed">
+                The free check stays useful. The paid plan adds the recurring proof that a one-time result cannot give.
+              </p>
+              <div class="mt-5 flex flex-col gap-3">
+                <a
+                  href={paidStep.plan.href}
+                  data-plan-id={paidStep.plan.id}
+                  data-plan-name={paidStep.plan.name}
+                  data-plan-price={paidStep.plan.price}
+                  data-plan-period={paidStep.plan.period}
+                  data-plan-currency="USD"
+                  data-cta-location={paidStep.plan.ctaLocation}
+                  class={primaryClass}
+                >
+                  {paidStep.plan.cta}
+                </a>
+                {paidStep.secondary && (
+                  <a href={paidStep.secondary.href} data-cta={paidStep.secondary.dataCta} class={secondaryClass}>
+                    {paidStep.secondary.label}
+                  </a>
+                )}
+              </div>
+            </aside>
+          </div>
+        </section>
+      )}
+
+      <section aria-labelledby="intent-faq-heading">
+        <h2 id="intent-faq-heading">Frequently asked questions</h2>
+        <div class="mt-6 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail md:grid-cols-2">
+          {faqs.map((item) => (
+            <section class="bg-white p-5">
+              <h3>{item.q}</h3>
+              <p class="mt-2 text-sm">{item.a}</p>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <section class="rounded-[4px] border border-pass/50 bg-pass-wash/60 p-6 md:p-8" aria-label="Next step">
+        <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div class="max-w-2xl">
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+              <h2>Turn the search intent into a measurable audit.</h2>
+              <span class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">Next step</span>
+            </div>
+            <p class="mt-3 text-sm">
+              Start with a free page-level check. If the score exposes a technical or citation gap, move the same domain into monitoring instead of repeating manual checks.
+            </p>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <a href={primaryCta.href} data-cta={`${primaryCta.dataCta}_footer`} class={primaryClass}>{primaryCta.label}</a>
+            <a href="/pricing/" data-cta="intent_landing_footer_pricing" class={secondaryClass}>Compare plans</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </article>
+</Shell>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

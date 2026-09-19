@@ -1,0 +1,233 @@
+---
+import Shell from '../components/Shell.astro';
+import { BOOK } from '../lib/bookData';
+---
+
+<Shell
+  title="About Auriti Labs — The Team Behind GeoReady"
+  description="Auriti Labs builds open-source tools for AI search visibility. GEO Optimizer is the audit engine. GeoReady is the monitoring platform."
+  canonical="https://geoready.dev/about/"
+>
+  <div class="bg-paper font-text text-ink">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-16">
+      <header class="mb-14 md:mb-20">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <h1 class="font-head text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] md:text-5xl">
+            About Auriti Labs
+          </h1>
+          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">GeoReady · About</p>
+        </div>
+
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft md:text-lg">
+          Auriti Labs builds open-source tools for AI search visibility and Generative Engine Optimization.
+        </p>
+      </header>
+
+      <div class="space-y-14">
+
+        {/* Products */}
+        <section>
+          <h2 class="mb-6 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Products</h2>
+          <div class="grid grid-cols-1 gap-px overflow-hidden rounded-[4px] border border-rail bg-rail md:grid-cols-2">
+
+            <div class="bg-white p-5">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <h3 class="text-[15px] font-semibold text-ink">GEO Optimizer</h3>
+                <span class="font-mono text-[11px] text-ink-mute">pip install geo-optimizer-skill</span>
+              </div>
+              <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+                Open-source Python toolkit for auditing AI search visibility. Scores websites across
+                8 signal categories — robots.txt, llms.txt, schema, meta tags, content, signals,
+                AI discovery, and brand entity. MIT licensed. Available as a CLI and as a web tool
+                at <a href="https://geoready.dev" class="text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">geoready.dev</a>.
+              </p>
+              <div class="mt-4 flex flex-wrap gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em]">
+                <a href="https://github.com/Auriti-Labs/geo-optimizer-skill" class="inline-flex items-center gap-1 text-ink-mute transition-colors hover:text-pass-deep" target="_blank" rel="noopener">
+                  GitHub
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </a>
+                <a href="https://pypi.org/project/geo-optimizer-skill/" class="inline-flex items-center gap-1 text-ink-mute transition-colors hover:text-pass-deep" target="_blank" rel="noopener">
+                  PyPI
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </a>
+                <a href="https://auriti-labs.github.io/geo-optimizer-skill/" class="inline-flex items-center gap-1 text-ink-mute transition-colors hover:text-pass-deep" target="_blank" rel="noopener">
+                  Docs
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="bg-white p-5">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <h3 class="text-[15px] font-semibold text-ink">GeoReady</h3>
+                <span class="rounded-[2px] bg-pass-wash px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-pass-deep">Live</span>
+              </div>
+              <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+                The commercial monitoring platform built on GEO Optimizer. Adds continuous score
+                tracking, regression alerts, score history, and team workflows for agencies and
+                developers managing multiple sites. Available at
+                <a href="https://app.geoready.dev" class="text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep" target="_blank" rel="noopener">app.geoready.dev</a>.
+              </p>
+              <div class="mt-4 font-mono text-[11px] uppercase tracking-[0.1em]">
+                <a href="/pricing/" class="inline-flex items-center gap-1 text-ink-mute transition-colors hover:text-pass-deep">
+                  See plans
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Research foundation */}
+        <section class="border-t border-rail pt-10">
+          <h2 class="mb-4 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Research foundation</h2>
+          <p class="max-w-3xl text-sm leading-relaxed text-ink-soft">
+            The scoring methodology is grounded in peer-reviewed research on AI search retrieval:
+            the Princeton KDD 2024 study on generative engine optimization and the AutoGEO ICLR 2026
+            paper on automated GEO. Every signal maps to peer-reviewed research or our own documented analysis.
+          </p>
+          <div class="mt-4">
+            <a href="/research/" class="inline-flex items-center gap-1.5 text-sm font-medium text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">
+              Read the research foundation
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+            </a>
+          </div>
+        </section>
+
+        {/* Open source */}
+        <section class="border-t border-rail pt-10">
+          <h2 class="mb-4 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Open source</h2>
+          <p class="max-w-3xl text-sm leading-relaxed text-ink-soft">
+            GEO Optimizer is MIT licensed. The source code, scoring weights, audit methodology,
+            and all 47 citability methods are publicly available on GitHub. The audit tool and CLI
+            remain free with no rate limits.
+          </p>
+          <blockquote class="mt-4 max-w-2xl border-l-2 border-pass-deep pl-4">
+            <p class="text-sm italic leading-relaxed text-ink-soft">
+              AI visibility infrastructure should be auditable by anyone, not locked behind
+              proprietary black boxes.
+            </p>
+          </blockquote>
+          <div class="mt-4">
+            <a href="/manifesto/" class="inline-flex items-center gap-1.5 text-sm font-medium text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">
+              Read the manifesto
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+            </a>
+          </div>
+        </section>
+
+        {/* Founder */}
+        <section class="border-t border-rail pt-10">
+          <h2 class="mb-4 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Founder</h2>
+          <div class="max-w-3xl rounded-[4px] border border-rail bg-white p-5">
+            <h3 class="text-[15px] font-semibold text-ink">Juan Camilo Auriti</h3>
+            <p class="mt-0.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">Founder &amp; maintainer</p>
+            <p class="mt-3 text-sm leading-relaxed text-ink-soft">
+              Juan Camilo builds open-source tools for AI search visibility. He maintains
+              GEO Optimizer, the MIT-licensed audit engine behind GeoReady, and develops the
+              scoring methodology, research notes, and product in the open.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em]">
+              <a href="https://github.com/Auriti-Labs" class="inline-flex items-center gap-1 text-ink-mute transition-colors hover:text-pass-deep" target="_blank" rel="noopener">
+                GitHub
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+              </a>
+              <a href="https://x.com/JuanAuriti" class="inline-flex items-center gap-1 text-ink-mute transition-colors hover:text-pass-deep" target="_blank" rel="noopener">
+                X
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* The book */}
+        <section class="border-t border-rail pt-10">
+          <h2 class="mb-4 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">The book</h2>
+          <p class="max-w-3xl text-sm leading-relaxed text-ink-soft">
+            The methodology behind these tools is documented in full in
+            <a href="/book/" class="text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">AI Search Engineering</a>
+            — a 992-page technical guide to Generative Engine Optimization, AI citations, and
+            agent-ready websites, written by Juan Camilo Auriti and published in September 2026
+            (ISBN 979-8172934568). The book explains the reasoning; the open-source engine runs it.
+          </p>
+        </section>
+
+        {/* Built in Italy */}
+        <section class="border-t border-rail pt-10">
+          <h2 class="mb-4 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Built in Italy. Designed for the global web.</h2>
+          <p class="max-w-3xl text-sm leading-relaxed text-ink-soft">
+            Auriti Labs is an independent software lab founded in Italy. GEO Optimizer and GeoReady
+            are built to serve developers, SEO specialists, and content teams worldwide — regardless
+            of language, market, or region. AI search engines operate globally; so does this toolkit.
+          </p>
+        </section>
+
+        {/* Contact */}
+        <section class="border-t border-rail pt-10">
+          <h2 class="mb-4 font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Contact</h2>
+          <p class="max-w-3xl text-sm leading-relaxed text-ink-soft">
+            Bug reports and feature requests: <a href="https://github.com/Auriti-Labs/geo-optimizer-skill/issues" class="text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep" target="_blank" rel="noopener">GitHub Issues</a>.
+            For everything else, reach out via GitHub.
+          </p>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Auriti Labs",
+    "url": "https://geoready.dev/about/",
+    "description": "Auriti Labs builds open-source tools for AI search visibility and Generative Engine Optimization. Products: GEO Optimizer (open-source audit engine) and GeoReady (commercial monitoring platform).",
+    // Same @id as the full Book node on /book/, so consumers merge the two
+    // instead of seeing two books. ISBN and page count are declared once, there.
+    "mentions": {
+      "@type": "Book",
+      "@id": "https://geoready.dev/book/#book",
+      "name": BOOK.title,
+      "url": "https://geoready.dev/book/",
+      "author": { "@id": "https://geoready.dev/#founder" }
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Auriti Labs",
+      "url": "https://geoready.dev"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Auriti Labs",
+      "url": "https://geoready.dev"
+    },
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Auriti Labs",
+      "url": "https://geoready.dev",
+      "description": "Auriti Labs builds open-source tools for AI search visibility and Generative Engine Optimization.",
+      "foundingDate": "2024",
+      "foundingLocation": {
+        "@type": "Country",
+        "name": "Italy"
+      },
+      "areaServed": "Worldwide",
+      "sameAs": [
+        "https://github.com/Auriti-Labs",
+        "https://pypi.org/project/geo-optimizer-skill/"
+      ],
+      "founder": {
+        "@type": "Person",
+        "@id": "https://geoready.dev/#founder",
+        "name": "Juan Camilo Auriti",
+        "jobTitle": "Founder & Maintainer",
+        "description": "Builds open-source tools for AI search visibility. Maintains GEO Optimizer, the MIT-licensed audit engine behind GeoReady.",
+        "url": "https://x.com/JuanAuriti",
+        "sameAs": [
+          "https://github.com/Auriti-Labs",
+          "https://x.com/JuanAuriti"
+        ]
+      }
+    }
+  })} />
+</Shell>

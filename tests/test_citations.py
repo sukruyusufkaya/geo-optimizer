@@ -1,0 +1,488 @@
+"""Tests for geo citations — one-shot AI citation check.
+
+All LLM calls are mocked — zero real network calls.
+"""
+
+from __future__ import annotations
+
+from unittest.mock import Mock, patch
+
+from click.testing import CliRunner
+
+import geo_optimizer.core.citations as citations_mod
+from geo_optimizer.cli.main import cli
+from geo_optimizer.core.citations import normalize_domain, run_citation_check
+from geo_optimizer.core.llm_client import LLMResponse
+
+
+def _sonar_response(text: str, citations: list[str] | None = None) -> LLMResponse:
+    return LLMResponse(text=text, model="sonar", provider="perplexity", citations=citations or [])
+
+
+class TestNormalizeDomain:
+    def test_bare_domain(self):
+        assert normalize_domain("Example.com") == "example.com"
+
+    def test_url_with_path(self):
+        assert normalize_domain("https://www.example.com/page?q=1") == "example.com"
+
+    def test_port_stripped(self):
+        assert normalize_domain("example.com:8080") == "example.com"
+
+
+class TestRunCitationCheck:
+    def test_domain_cited_via_sonar_citations(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response(
+                "GeoReady is a popular GEO audit tool.",
+                citations=["https://geoready.dev/guides/geo", "https://other.com/post"],
+            )
+            result = run_citation_check("GeoReady", "geoready.dev", provider="perplexity", api_key="pk-test")
+
+        assert result.checked and result.skipped_reason is None
+        assert result.queries_run == 3  # default templates
+        assert result.domain_citation_rate == 1.0
+        assert result.brand_mention_rate == 1.0
+        assert result.verdict == "strong"
+        # own domain excluded from competitor list
+        assert all(d != "geoready.dev" for d, _ in result.top_cited_domains)
+        assert ("other.com", 3) in result.top_cited_domains
+
+    def test_mentioned_only_without_citation(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response(
+                "Acme is one option.", citations=["https://review-site.com/best-tools"]
+            )
+            result = run_citation_check("Acme", "acme.com", provider="perplexity", api_key="pk-test")
+
+        assert result.domain_citation_rate == 0.0
+        assert result.brand_mention_rate == 1.0
+        assert result.verdict == "mentioned_only"
+
+    def test_invisible(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("Try CompetitorX.", citations=["https://competitorx.com"])
+            result = run_citation_check("Acme", "acme.com", provider="perplexity", api_key="pk-test")
+
+        assert result.verdict == "invisible"
+
+    def test_same_named_domain_not_counted_as_brand_mention(self):
+        """A same-named but unrelated domain (geoready.app) must not inflate the
+        brand mention rate for GeoReady (geoready.dev)."""
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response(
+                "For this, check geoready.app — it covers the topic well.",
+                citations=["https://geoready.app/post"],
+            )
+            result = run_citation_check("GeoReady", "geoready.dev", provider="perplexity", api_key="pk-test")
+
+        assert result.brand_mention_rate == 0.0
+        assert result.domain_citation_rate == 0.0
+        assert result.verdict == "invisible"
+        # the homonym is surfaced as a competitor domain, not as "you"
+        assert ("geoready.app", 3) in result.top_cited_domains
+
+    def test_brand_not_matched_inside_longer_word(self):
+        """A short brand must not match as a substring of a longer word."""
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("Acmecorp and Acmetech are unrelated firms.")
+            result = run_citation_check("Acme", "acme.com", provider="perplexity", api_key="pk-test")
+
+        assert result.brand_mention_rate == 0.0
+
+    def test_brand_mention_at_sentence_end_still_counts(self):
+        """A legitimate standalone mention ending a sentence still counts."""
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("Many teams rely on Acme.")
+            result = run_citation_check("Acme", "acme.com", provider="perplexity", api_key="pk-test")
+
+        assert result.brand_mention_rate == 1.0
+
+    def test_domain_cited_in_text_for_parametric_providers(self):
+        """Providers without a citations list still count URLs in the answer text."""
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = LLMResponse(
+                text="See https://www.acme.com/docs for details.", model="gpt-4o-mini", provider="openai"
+            )
+            result = run_citation_check("Acme", "acme.com", provider="openai", api_key="sk-test")
+
+        assert result.domain_citation_rate == 1.0
+
+    def test_custom_queries_override_templates(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("answer")
+            result = run_citation_check(
+                "Acme",
+                "acme.com",
+                queries=["best CRM?"],
+                provider="perplexity",
+                api_key="pk-test",
+            )
+
+        assert result.queries_run == 1
+        assert mock_q.call_args[0][0] == "best CRM?"
+
+    def test_no_provider_returns_skipped(self, monkeypatch):
+        for var in (
+            "PERPLEXITY_API_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "GROQ_API_KEY",
+            "MINIMAX_API_KEY",
+            "GEMINI_API_KEY",
+            "DEEPSEEK_API_KEY",
+            "GEO_LLM_API_KEY",
+            "GEO_LLM_PROVIDER",
+        ):
+            monkeypatch.delenv(var, raising=False)
+        result = run_citation_check("Acme", "acme.com")
+        assert result.skipped_reason is not None
+        assert "MINIMAX_API_KEY" in result.skipped_reason
+        assert "GEMINI_API_KEY" in result.skipped_reason
+        assert "DEEPSEEK_API_KEY" in result.skipped_reason
+
+    def test_all_queries_error_returns_skipped(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = LLMResponse(error="boom", provider="perplexity")
+            result = run_citation_check("Acme", "acme.com", provider="perplexity", api_key="pk-test")
+
+        assert result.skipped_reason is not None
+        assert "boom" in result.skipped_reason
+
+
+class TestResolveProvider:
+    def test_prefers_perplexity_when_key_set(self, monkeypatch):
+        monkeypatch.setenv("PERPLEXITY_API_KEY", "pk-test")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        monkeypatch.delenv("GEO_LLM_PROVIDER", raising=False)
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider()
+        assert (provider, key) == ("perplexity", "pk-test")
+
+    def test_explicit_provider_uses_its_env_key(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider("openai")
+        assert (provider, key) == ("openai", "sk-test")
+
+    def test_explicit_provider_without_key(self, monkeypatch):
+        monkeypatch.delenv("GROQ_API_KEY", raising=False)
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider("groq")
+        assert provider == "groq" and key is None
+
+    def test_explicit_minimax_provider_uses_its_env_key(self, monkeypatch):
+        monkeypatch.setenv("MINIMAX_API_KEY", "minimax-test")
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider("minimax")
+        assert (provider, key) == ("minimax", "minimax-test")
+
+    def test_explicit_gemini_provider_uses_its_env_key(self, monkeypatch):
+        monkeypatch.setenv("GEMINI_API_KEY", "gemini-test")
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider("gemini")
+        assert (provider, key) == ("gemini", "gemini-test")
+
+    def test_explicit_deepseek_provider_uses_its_env_key(self, monkeypatch):
+        monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-test")
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider("deepseek")
+        assert (provider, key) == ("deepseek", "deepseek-test")
+
+
+class TestWilsonInterval:
+    def test_zero_samples(self):
+        assert citations_mod._wilson_interval(0, 0) == (0.0, 0.0)
+
+    def test_all_success_small_n(self):
+        lo, hi = citations_mod._wilson_interval(5, 5)
+        assert 0.0 < lo < 1.0 and hi == 1.0  # never certain from 5 samples
+
+    def test_half_success(self):
+        lo, hi = citations_mod._wilson_interval(5, 10)
+        assert lo < 0.5 < hi
+        assert hi - lo > 0.3  # wide at n=10
+
+
+class TestMultiRun:
+    def test_runs_multiplies_calls_and_aggregates(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("GeoReady is great.", citations=["https://geoready.dev/x"])
+            result = run_citation_check("GeoReady", "geoready.dev", provider="perplexity", api_key="pk-test", runs=4)
+
+        assert mock_q.call_count == 3 * 4  # 3 templates x 4 runs
+        assert result.runs_per_query == 4
+        assert result.total_answers == 12
+        assert result.queries_run == 3
+        assert result.domain_citation_rate == 1.0
+        assert result.domain_citation_rate_ci[1] == 1.0
+        assert result.domain_citation_rate_ci[0] < 1.0
+        assert result.stable is True
+        for entry in result.entries:
+            assert entry.runs == 4 and entry.citation_runs == 4
+
+    def test_flaky_citation_is_not_stable(self):
+        # Cited in 2 of every 4 runs → rate 0.5, CI straddles the strong/cited line.
+        cited = _sonar_response("GeoReady rocks.", citations=["https://geoready.dev"])
+        not_cited = _sonar_response("Other tools are fine.", citations=["https://other.com"])
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.side_effect = [cited, not_cited, cited, not_cited] * 3
+            result = run_citation_check("GeoReady", "geoready.dev", provider="perplexity", api_key="pk-test", runs=4)
+
+        assert result.domain_citation_rate == 0.5
+        assert result.stable is False
+        assert result.entries[0].citation_runs == 2 and result.entries[0].runs == 4
+
+    def test_single_run_is_backwards_compatible(self):
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("GeoReady.", citations=["https://geoready.dev"])
+            result = run_citation_check("GeoReady", "geoready.dev", provider="perplexity", api_key="pk-test")
+
+        assert result.runs_per_query == 1
+        assert result.total_answers == 3
+        assert result.stable is False  # one sample is never "stable"
+        assert result.domain_citation_rate == 1.0
+
+    def test_partial_run_failures_still_counted(self):
+        ok = _sonar_response("GeoReady.", citations=["https://geoready.dev"])
+        err = LLMResponse(error="timeout", provider="perplexity")
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.side_effect = [ok, err, ok] * 3  # 2 of 3 runs answer per query
+            result = run_citation_check("GeoReady", "geoready.dev", provider="perplexity", api_key="pk-test", runs=3)
+
+        assert result.total_answers == 6  # 3 queries x 2 successful runs
+        assert all(e.runs == 2 for e in result.entries)
+
+
+class TestCitationsCli:
+    def test_cli_multirun_output(self, monkeypatch):
+        monkeypatch.setenv("PERPLEXITY_API_KEY", "pk-test")
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("GeoReady leads.", citations=["https://geoready.dev"])
+            runner = CliRunner()
+            result = runner.invoke(cli, ["citations", "--brand", "GeoReady", "--domain", "geoready.dev", "--runs", "5"])
+
+        assert result.exit_code == 0
+        assert "runs" in result.output
+        assert "95% CI" in result.output
+        assert "Verdict stable" in result.output
+
+    def test_cli_runs_out_of_range_rejected(self, monkeypatch):
+        monkeypatch.setenv("PERPLEXITY_API_KEY", "pk-test")
+        runner = CliRunner()
+        result = runner.invoke(cli, ["citations", "--brand", "X", "--domain", "x.com", "--runs", "99"])
+        assert result.exit_code != 0
+
+    def test_cli_text_output(self, monkeypatch):
+        monkeypatch.setenv("PERPLEXITY_API_KEY", "pk-test")
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("GeoReady leads the pack.", citations=["https://geoready.dev"])
+            runner = CliRunner()
+            result = runner.invoke(cli, ["citations", "--brand", "GeoReady", "--domain", "https://www.geoready.dev"])
+
+        assert result.exit_code == 0
+        assert "AI Citation Check" in result.output
+        assert "STRONG" in result.output
+        assert "geoready.dev" in result.output
+
+    def test_cli_json_output(self, monkeypatch):
+        import json
+
+        monkeypatch.setenv("PERPLEXITY_API_KEY", "pk-test")
+        with patch.object(citations_mod, "query_llm") as mock_q:
+            mock_q.return_value = _sonar_response("answer", citations=["https://acme.com"])
+            runner = CliRunner()
+            result = runner.invoke(cli, ["citations", "--brand", "Acme", "--domain", "acme.com", "--format", "json"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert payload["verdict"] == "strong"
+        assert payload["domain"] == "acme.com"
+
+    def test_cli_fails_without_any_key(self, monkeypatch):
+        for var in (
+            "PERPLEXITY_API_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "GROQ_API_KEY",
+            "MINIMAX_API_KEY",
+            "GEMINI_API_KEY",
+            "DEEPSEEK_API_KEY",
+            "GEO_LLM_API_KEY",
+            "GEO_LLM_PROVIDER",
+        ):
+            monkeypatch.delenv(var, raising=False)
+        runner = CliRunner()
+        result = runner.invoke(cli, ["citations", "--brand", "Acme", "--domain", "acme.com"])
+        assert result.exit_code == 1
+        assert "No AI provider configured" in result.output
+        assert "MINIMAX_API_KEY" in result.output
+        assert "GEMINI_API_KEY" in result.output
+        assert "DEEPSEEK_API_KEY" in result.output
+
+
+class TestPerplexityProvider:
+    def test_query_perplexity_parses_citations(self, monkeypatch):
+        from geo_optimizer.core import llm_client
+
+        fake_data = {
+            "model": "sonar",
+            "choices": [{"message": {"role": "assistant", "content": "Answer text"}}],
+            "usage": {"prompt_tokens": 12, "completion_tokens": 34},
+            "citations": ["https://a.com/page"],
+            "search_results": [
+                {"title": "B", "url": "https://b.com/post"},
+                {"title": "A", "url": "https://a.com/page"},
+            ],
+        }
+        fake_resp = Mock(status_code=200)
+        fake_resp.json.return_value = fake_data
+        fake_resp.raise_for_status.return_value = None
+        with patch("requests.post", return_value=fake_resp) as mock_post:
+            resp = llm_client.query_llm("q", provider="perplexity", api_key="pk-test")
+
+        assert resp.error is None
+        assert resp.provider == "perplexity"
+        assert resp.text == "Answer text"
+        assert resp.citations == ["https://a.com/page", "https://b.com/post"]  # merged, deduped
+        assert resp.prompt_tokens == 12
+        sent = mock_post.call_args
+        assert sent.kwargs["headers"]["Authorization"] == "Bearer pk-test"
+        assert sent.kwargs["json"]["model"] == "sonar"
+
+    def test_query_perplexity_http_error(self):
+        import requests as requests_mod
+
+        with patch("requests.post", side_effect=requests_mod.ConnectionError("down")):
+            from geo_optimizer.core import llm_client
+
+            resp = llm_client.query_llm("q", provider="perplexity", api_key="pk-test")
+
+        assert resp.error is not None
+        assert resp.provider == "perplexity"
+
+
+class TestResolveProviderSerpbase:
+    def test_explicit_serpbase_uses_its_own_env_key(self, monkeypatch):
+        """serpbase is resolved only when explicitly requested — SERPBASE_API_KEY
+        is never part of the default auto-detection chain (#527)."""
+        monkeypatch.setenv("SERPBASE_API_KEY", "sb-test")
+        provider, key = citations_mod.resolve_provider("serpbase")
+        assert (provider, key) == ("serpbase", "sb-test")
+
+    def test_explicit_serpbase_without_key(self, monkeypatch):
+        monkeypatch.delenv("SERPBASE_API_KEY", raising=False)
+        provider, key = citations_mod.resolve_provider("serpbase")
+        assert provider == "serpbase" and key is None
+
+    def test_serpbase_never_auto_detected(self, monkeypatch):
+        """Setting SERPBASE_API_KEY alone (no explicit --provider serpbase)
+        must not change the default auto-detection outcome."""
+        monkeypatch.setenv("SERPBASE_API_KEY", "sb-test")
+        monkeypatch.delenv("PERPLEXITY_API_KEY", raising=False)
+        monkeypatch.delenv("GEO_LLM_PROVIDER", raising=False)
+        monkeypatch.delenv("GEO_LLM_API_KEY", raising=False)
+        for var in (
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "GROQ_API_KEY",
+            "MINIMAX_API_KEY",
+            "GEMINI_API_KEY",
+            "DEEPSEEK_API_KEY",
+        ):
+            monkeypatch.delenv(var, raising=False)
+        provider, key = citations_mod.resolve_provider()
+        assert provider is None and key is None
+
+
+def _serp(organic=None, ai_overview_text="", ai_overview_sources=None, ai_overview_present=False, error=None):
+    from geo_optimizer.core.serp_provider import SerpResponse
+
+    return SerpResponse(
+        organic=organic or [],
+        ai_overview_present=ai_overview_present,
+        ai_overview_text=ai_overview_text,
+        ai_overview_sources=ai_overview_sources or [],
+        error=error,
+    )
+
+
+class TestRunCitationCheckServpbase:
+    """run_citation_check(provider="serpbase", ...) — Google SERP + AI Overview (#527)."""
+
+    def test_domain_cited_via_organic_results(self):
+        from geo_optimizer.core.serp_provider import SerpResult
+
+        with patch("geo_optimizer.core.serp_provider.query_serpbase") as mock_q:
+            mock_q.return_value = _serp(
+                organic=[
+                    SerpResult(title="Acme Home", url="https://acme.com/", snippet="Acme is a CRM"),
+                    SerpResult(title="Other", url="https://other.com/", snippet="unrelated"),
+                ]
+            )
+            result = run_citation_check(
+                "Acme", "acme.com", queries=["best CRM"], provider="serpbase", api_key="sb-test"
+            )
+
+        assert result.checked and result.skipped_reason is None
+        assert result.domain_citation_rate == 1.0
+        assert result.brand_mention_rate == 1.0
+        assert result.entries[0].platform == "google_serp"
+        assert result.entries[0].model == ""
+        assert result.runs_per_query == 1
+        assert result.stable is False
+
+    def test_domain_cited_via_ai_overview_source_only(self):
+        """Brand/domain appear only inside the AI Overview, not the organic list."""
+        with patch("geo_optimizer.core.serp_provider.query_serpbase") as mock_q:
+            mock_q.return_value = _serp(
+                ai_overview_present=True,
+                ai_overview_text="Acme is a popular CRM for startups.",
+                ai_overview_sources=["https://acme.com/pricing"],
+            )
+            result = run_citation_check(
+                "Acme", "acme.com", queries=["best CRM"], provider="serpbase", api_key="sb-test"
+            )
+
+        assert result.domain_citation_rate == 1.0
+        assert result.brand_mention_rate == 1.0
+        assert result.entries[0].model == "ai_overview"
+
+    def test_invisible_when_neither_organic_nor_overview_mention_brand(self):
+        from geo_optimizer.core.serp_provider import SerpResult
+
+        with patch("geo_optimizer.core.serp_provider.query_serpbase") as mock_q:
+            mock_q.return_value = _serp(
+                organic=[SerpResult(title="CompetitorX", url="https://competitorx.com/", snippet="x")]
+            )
+            result = run_citation_check(
+                "Acme", "acme.com", queries=["best CRM"], provider="serpbase", api_key="sb-test"
+            )
+
+        assert result.verdict == "invisible"
+        assert ("competitorx.com", 1) in result.top_cited_domains
+
+    def test_query_error_recorded_and_skips_that_query(self):
+        with patch("geo_optimizer.core.serp_provider.query_serpbase") as mock_q:
+            mock_q.return_value = _serp(error="ConnectionError: down")
+            result = run_citation_check(
+                "Acme", "acme.com", queries=["best CRM"], provider="serpbase", api_key="sb-test"
+            )
+
+        assert result.skipped_reason is not None
+        assert "down" in result.skipped_reason
+
+    def test_runs_parameter_is_not_multiplied_for_serpbase(self):
+        """Unlike LLM providers, --runs must not multiply serpbase calls —
+        a SERP snapshot isn't resampled the way a non-deterministic LLM
+        answer is, and doing so would burn through the paid API for nothing."""
+        from geo_optimizer.core.serp_provider import SerpResult
+
+        with patch("geo_optimizer.core.serp_provider.query_serpbase") as mock_q:
+            mock_q.return_value = _serp(organic=[SerpResult(title="Acme", url="https://acme.com/", snippet="x")])
+            result = run_citation_check(
+                "Acme", "acme.com", queries=["best CRM"], provider="serpbase", api_key="sb-test", runs=5
+            )
+
+        assert mock_q.call_count == 1  # one query in query_list, runs=5 ignored
+        assert result.runs_per_query == 1

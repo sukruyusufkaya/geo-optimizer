@@ -1,0 +1,357 @@
+---
+import Shell from '../components/Shell.astro';
+
+const title = 'Semrush AI Visibility Toolkit Alternative | GeoReady';
+const description =
+  "What Semrush's AI Visibility Toolkit is, what it costs, and when a dedicated $0-$19 GEO tool beats a bundled suite module. Facts dated September 2026.";
+const canonical = 'https://geoready.dev/semrush-ai-visibility-toolkit-alternative/';
+const datePublished = '2026-09-16';
+const dateModified = '2026-09-16';
+
+// Prezzi Semrush verificati su semrush.com/pricing/, accesso 2026-09-01.
+// Colonna 4 = limiti AI-visibility nominati esplicitamente su quella riga di prezzo.
+const SEMRUSH_PRICING = [
+  ['Free', '$0/mo', '$0/mo', '"AI Visibility features" included; exact prompt/domain scope not disclosed on the page'],
+  ['SEO', '$117.33/mo', '$139/mo', 'Not broken out separately from Starter on the AI-visibility limits table — not verifiable whether this tier includes the AI Visibility Toolkit by name'],
+  ['Starter', '$165.17/mo', '$199/mo', 'AI-ready Site Audit; 50 tracked prompts/day; 300 AI-visibility reports/day'],
+  ['Pro+', '$248.17/mo', '$299/mo', '100 tracked prompts/day (report-cap and domain-count not separately disclosed)'],
+  ['Advanced', '$455.67/mo', '$549/mo', '200 tracked prompts/day (report-cap and domain-count not separately disclosed)'],
+] as const;
+
+// Confronto per fascia di prezzo — Semrush: semrush.com/pricing/, accesso 2026-09-01.
+// GeoReady: pricing.md, fetch live 2026-08-31.
+const PRICE_BANDS = [
+  ['$0/mo', 'Free plan includes some "AI Visibility features" (scope undisclosed); capped at 10 reports/day across the entire suite', 'Free — full 8-category GEO audit, 5 audits/day, no account, no card, forever'],
+  ['~$19-49/mo (GeoReady)', 'No Semrush tier at this price names AI-visibility features on the pricing page; the SEO tier ($117.33/mo annual) is the next rung up and its AI-visibility inclusion is not verifiable from the page checked', 'Pro ($19/mo) — 1 domain weekly monitoring, regression alerts, PDF export, API access. Studio ($49/mo) — adds AI citation tracking (5 automated Perplexity checks/day), competitor comparison, unbranded PDF'],
+  ['$165-248/mo (Semrush Starter/Pro+, annual)', 'AI-ready Site Audit, 50-100 tracked prompts/day, 300 AI-visibility reports/day — plus the full SEO suite (keyword research, backlinks, rank tracking) at the same price', 'Agency ($89/mo) — 50 domains daily monitoring, team workspace, unlimited batch audits, AI answer snapshots — no unrelated suite tools bundled in'],
+  ['$456/mo+ (Semrush Advanced, annual)', '200 tracked prompts/day, full suite, "Additional Users" add-on from $45/mo per seat', 'GeoReady has no tier in this band — Agency ($89/mo) is the self-serve ceiling; Enterprise is custom, "talk to us"'],
+] as const;
+
+// FAQ condivise tra markup visibile e JSON-LD (single source of truth).
+const faqs = [
+  {
+    q: 'Is "AI Visibility Toolkit" the same thing as "Semrush One"?',
+    a: 'Not exactly. "AI Visibility Toolkit" and "AI visibility" are the names used for the underlying feature set on different Semrush pages; "Semrush One" is the broader brand for Semrush\'s combined SEO-plus-AI-search positioning. The AI-visibility capability appears to live inside both framings rather than as its own separately-branded product.',
+  },
+  {
+    q: "How much does Semrush's AI-visibility feature cost on its own?",
+    a: 'There is no standalone AI-visibility-only price that we could find on semrush.com as checked. It scales with the same suite plans — SEO ($117.33/mo annual), Starter ($165.17/mo annual, the first tier to name AI-visibility limits explicitly), Pro+ ($248.17/mo annual), and Advanced ($455.67/mo annual) — so the AI-visibility feature always comes bundled with the rest of the SEO suite at whatever tier you\'re on.',
+  },
+  {
+    q: "Does Semrush's AI-visibility data update daily or weekly?",
+    a: "Semrush's own pages say both, for different framings: the features page names daily updates for Prompt Tracking specifically within a broader \"daily, weekly, and monthly\" cadence description; the Semrush One page states \"weekly data updates\" generally. We're presenting both rather than picking one — verify directly with Semrush if the exact cadence matters to your decision.",
+  },
+  {
+    q: 'Can I get AI-visibility tracking without buying the rest of the Semrush suite?',
+    a: "Not from Semrush, based on what's published — the AI-visibility features are bundled into suite-wide plans, not sold as an isolated SKU. That's exactly the gap a dedicated tool like GeoReady is built to fill: pay for AI visibility specifically, starting at $0 and reaching $49/mo for citation tracking, without paying for keyword research or backlink tooling you may not need.",
+  },
+  {
+    q: 'Which covers more AI engines — Semrush or GeoReady?',
+    a: "At the feature-description level, Semrush names more engines by default: ChatGPT, Perplexity, Gemini, Claude, and AI Overviews are all listed on its features page without a single-engine entry gate. GeoReady's automated citation tracking (Studio and up) checks Perplexity specifically, with ChatGPT and Google covered via manual paste on Agency. If broad automated engine coverage out of the box is the deciding factor, Semrush's toolkit covers more today.",
+  },
+];
+---
+
+<Shell title={title} description={description} canonical={canonical}>
+  <article class="mx-auto max-w-3xl bg-paper px-4 py-10 font-text text-ink sm:px-6 md:py-16 [&_h2]:font-head [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:leading-tight [&_h2]:tracking-[-0.02em] [&_h2]:text-ink [&_h3]:font-head [&_h3]:text-lg [&_h3]:font-extrabold [&_h3]:tracking-[-0.01em] [&_h3]:text-ink [&_p]:text-ink-soft [&_p]:leading-relaxed [&_li]:text-ink-soft [&_li]:leading-relaxed">
+
+    {/* Header — answer-first, entrambi gli intent (valutare il toolkit / cercare un'alternativa) */}
+    <header class="mb-12 md:mb-16">
+      <h1 class="font-head text-3xl font-extrabold leading-tight tracking-[-0.03em] text-ink md:text-4xl">
+        Semrush AI Visibility Toolkit Alternative: What It Is, What It Costs, and When to Use Something Else
+      </h1>
+
+      <div class="mt-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-ink-mute">
+        <span>GeoReady</span>
+        <span class="h-1 w-1 rounded-full bg-ink-mute" />
+        <span>Compare</span>
+      </div>
+
+      <p class="mt-4 text-base leading-relaxed text-ink-soft md:text-lg">
+        If you're reading this, you're probably in one of two situations: you're evaluating
+        Semrush's "AI Visibility Toolkit" itself and want to know what it actually is and costs
+        before you buy, or you already know Semrush and are looking for something smaller and
+        cheaper that does the AI-visibility piece on its own. This page answers both, in order —
+        starting with what Semrush's toolkit actually is, since that turns out to be less obvious
+        than the name suggests.
+      </p>
+
+      <p class="mt-4 text-sm leading-relaxed text-ink-mute">
+        Every Semrush fact below is sourced from semrush.com directly, accessed 2026-09-01, and
+        date-stamped where prices or limits could change. GeoReady facts are from <code>pricing.md</code>,
+        fetched live 2026-08-31.
+      </p>
+
+      <p class="mt-4 font-mono text-xs text-ink-mute">
+        Published September 16, 2026 · Last updated September 16, 2026
+      </p>
+    </header>
+
+    {/* What is it, exactly */}
+    <section class="mb-12 md:mb-16">
+      <h2>What is Semrush's "AI Visibility Toolkit," exactly?</h2>
+      <p class="mt-4">
+        This is the first thing worth clearing up, because Semrush itself doesn't use one
+        consistent name for it. As of September 2026, we found three different labels on
+        Semrush's own site for what appears to be the same underlying capability:
+      </p>
+      <ul class="mt-4 list-disc space-y-2 pl-5">
+        <li><strong>"AI Visibility Toolkit"</strong> — used in a free-trial page snippet: "Try our SEO audit, keyword research, AI Visibility Toolkit, and more" (source: semrush.com/semrush-free-trial, accessed 2026-09-01).</li>
+        <li><strong>"AI visibility"</strong> — the name used on the dedicated feature page, described as letting you "see how often your brand and content appear in answers from ChatGPT, Perplexity, Gemini, Claude, and AI Overviews" (source: semrush.com/features/ai-visibility/, accessed 2026-09-01).</li>
+        <li>Folded into <strong>"Semrush One"</strong> — marketed as "Win Every Search, From SEO to AI Discovery," a "one connected solution for Google and AI search" (source: semrush.com/one, accessed 2026-09-01).</li>
+      </ul>
+      <p class="mt-4">
+        Put plainly: this is not a separately-purchased product with its own SKU. It's a feature
+        set bundled into Semrush's main SEO plans and folded into the broader "Semrush One"
+        branding — the AI-visibility limits scale with the same plan tiers (SEO/Starter/Pro+/Advanced)
+        used for the rest of the suite, not a standalone add-on price. We did not find a page
+        selling it in isolation in this session — that remains not verifiable beyond what was
+        checked, so if a standalone SKU exists elsewhere on Semrush's site, treat this section as
+        current-best-evidence rather than exhaustive.
+      </p>
+    </section>
+
+    {/* What it does */}
+    <section class="mb-12 md:mb-16">
+      <h2>What it does</h2>
+      <p class="mt-4">
+        Based on semrush.com/features/ai-visibility/ and semrush.com/one (both accessed
+        2026-09-01), the capability set includes:
+      </p>
+      <ul class="mt-4 list-disc space-y-2 pl-5">
+        <li>Measuring how often a brand appears in AI-generated answers across ChatGPT, Perplexity, Gemini, Claude, and Google AI Overviews.</li>
+        <li>Tracking share of voice in LLM responses over time, and benchmarking competitor visibility in AI answers.</li>
+        <li>Monitoring brand sentiment and positioning in AI outputs.</li>
+        <li>Identifying which prompts or topics trigger brand mentions ("Monitor custom prompts").</li>
+        <li>An "AI-ready Site Audit" — a technical audit for AI-bot accessibility, named specifically on the Starter plan row of the pricing page.</li>
+        <li>Generating automated AI-visibility reports for any domain.</li>
+      </ul>
+      <p class="mt-4">
+        Semrush One's own framing adds a claimed dataset of "239M+ relevant LLM prompts globally,
+        including the largest US and ChatGPT databases" (source: semrush.com/one, accessed
+        2026-09-01). That's a real, self-reported scale claim, and it's larger than what a small
+        dedicated tool can claim — worth knowing going in.
+      </p>
+    </section>
+
+    {/* Pricing table */}
+    <section class="mb-12 md:mb-16">
+      <h2>What it costs, as of September 2026</h2>
+      <p class="mt-4">
+        All figures below are volatile and were verified on semrush.com/pricing/ on 2026-09-01.
+        The page's figures appear to be USD based on the "$" symbol shown, though the page itself
+        did not display an explicit currency code in the text extracted — treat currency as not
+        independently confirmed beyond that.
+      </p>
+      <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-paper">
+            <tr class="border-b border-rail">
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Plan</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Monthly, billed annually</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Monthly, billed month-to-month</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">AI-visibility limits named on this row</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rail">
+            {SEMRUSH_PRICING.map(([plan, annual, monthly, limits]) => (
+              <tr class="align-top">
+                <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-text font-semibold text-ink">{plan}</th>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{annual}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{monthly}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{limits}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-4">
+        On top of any plan: "Additional Users Starting at $45/mo" — a per-seat add-on for
+        teammates (source: semrush.com/pricing/, accessed 2026-09-01). Semrush also offers a 7-day
+        free trial with "unlimited access to all Semrush One tools" (source: semrush.com/semrush-free-trial,
+        semrush.com/one, accessed 2026-09-01) — a time-boxed trial, not a permanent free allowance
+        for AI visibility specifically. The Free plan itself is capped at "10 reports per day
+        across all vital tools," a shared cap across Semrush's entire toolset, not an
+        AI-visibility-specific allowance.
+      </p>
+    </section>
+
+    {/* Cadence discrepancy, not reconciled */}
+    <section class="mb-12 md:mb-16">
+      <h2>Monitoring cadence: what Semrush's own pages say (not reconciled)</h2>
+      <p class="mt-4">
+        Semrush's own pages are not fully consistent about how often AI-visibility data
+        refreshes, and rather than guess which statement governs which sub-feature, here's exactly
+        what each page says:
+      </p>
+      <ul class="mt-4 list-disc space-y-2 pl-5">
+        <li>semrush.com/features/ai-visibility/ (accessed 2026-09-01) states "Daily, weekly, and monthly data refreshes," with "daily AI visibility updates" attributed specifically to the Prompt Tracking feature.</li>
+        <li>semrush.com/one (accessed 2026-09-01) states "Weekly data updates" for performance tracking, without the same daily/weekly/monthly breakdown.</li>
+      </ul>
+      <p class="mt-4">
+        Both statements are reproduced above verbatim rather than resolved into one answer — if
+        cadence is material to your evaluation, confirm directly with Semrush sales or support
+        before buying.
+      </p>
+    </section>
+
+    {/* Where Semrush wins */}
+    <section class="mb-12 md:mb-16">
+      <h2>Where Semrush genuinely wins</h2>
+      <p class="mt-4">
+        Being fair to the incumbent: Semrush has real advantages here that a small, dedicated tool
+        does not have.
+      </p>
+      <ol class="mt-4 list-decimal space-y-3 pl-5">
+        <li><strong>Bundling with an already-adopted SEO suite.</strong> If your team already pays for Semrush for keyword research, backlinks, and rank tracking, AI visibility arrives inside the same login, same billing, same reporting — no new vendor relationship (source: semrush.com/one, semrush.com/pricing/, accessed 2026-09-01).</li>
+        <li><strong>A large claimed prompt dataset.</strong> "239M+ relevant LLM prompts globally" is a scale of underlying data a small point-tool cannot self-fund (source: semrush.com/one, accessed 2026-09-01).</li>
+        <li><strong>Established brand trust.</strong> Semrush is a long-established, publicly known SEO vendor, which lowers procurement friction for larger organizations.</li>
+        <li><strong>Multi-engine coverage without a "ChatGPT-only" style gate.</strong> ChatGPT, Perplexity, Gemini, and Claude are all named on the features page without a Profound-style single-engine entry tier (source: semrush.com/features/ai-visibility/, accessed 2026-09-01).</li>
+      </ol>
+    </section>
+
+    {/* Case for a dedicated tool */}
+    <section class="mb-12 md:mb-16">
+      <h2>The case for a dedicated tool instead</h2>
+      <p class="mt-4">
+        Someone searching "Semrush AI Visibility Toolkit alternative" is very often someone who
+        does not want or need the rest of the Semrush suite — keyword research, backlink audits,
+        rank tracking — and is being asked to buy a $165–456/mo plan (billed annually; higher
+        month-to-month) to get an AI-visibility module that is a small line item inside a much
+        larger platform.
+      </p>
+      <p class="mt-4">Three honest, verifiable differentiators for GeoReady:</p>
+      <ol class="mt-4 list-decimal space-y-3 pl-5">
+        <li><strong>Purpose-built, not bundled.</strong> GeoReady is a dedicated GEO/AI-visibility tool from the first screen. Semrush's AI-visibility features are one module inside a suite whose plan names and prices (SEO/Starter/Pro+/Advanced) are built around the whole platform, not around AI visibility alone.</li>
+        <li><strong>Lower cost of entry for AI visibility specifically.</strong> GeoReady Pro is $19/mo. Semrush's cheapest tier that names an AI-visibility-specific feature by row (the "AI-ready Site Audit" plus 50 tracked prompts/day, on Starter) is $165.17/mo billed annually — and that price also buys the entire rest of the SEO suite whether you want it or not.</li>
+        <li><strong>No per-seat add-on tax.</strong> Semrush charges "Additional Users Starting at $45/mo" on top of the base plan. GeoReady's tier prices — Pro $19, Studio $49, Agency $89 — are the whole price; Agency's team workspace is included at that price with no additional per-seat line disclosed in <code>pricing.md</code>.</li>
+      </ol>
+    </section>
+
+    {/* Price band comparison */}
+    <section class="mb-12 md:mb-16">
+      <h2>Semrush vs. GeoReady, by price band</h2>
+      <p class="mt-4">
+        A different lens than a feature-by-feature table: what does each price band actually buy
+        you for the AI-visibility use case specifically? Semrush figures: semrush.com/pricing/,
+        accessed 2026-09-01. GeoReady figures: <code>pricing.md</code>, fetched live 2026-08-31.
+      </p>
+      <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-paper">
+            <tr class="border-b border-rail">
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Price band</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Semrush — what's bundled at this band</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">GeoReady — what's included at this band</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rail">
+            {PRICE_BANDS.map(([band, semrush, geoready]) => (
+              <tr class="align-top">
+                <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-text font-semibold text-ink">{band}</th>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{semrush}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{geoready}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {/* Who should stay */}
+    <section class="mb-12 md:mb-16">
+      <h2>Who should stay on Semrush</h2>
+      <p class="mt-4">
+        If you're already paying for Semrush's full suite and the AI-visibility module is a
+        convenience layered on top of tools you use anyway, switching just for AI visibility
+        doesn't make sense — you'd be paying twice. Stay on Semrush if the 239M+ prompt dataset
+        scale, the suite-wide login/billing, or Semrush's general market trust are the actual
+        deciding factors for your team. Those are real, and GeoReady doesn't claim to match
+        Semrush's data scale or suite breadth.
+      </p>
+    </section>
+
+    {/* Getting started */}
+    <section class="mb-12 md:mb-16">
+      <h2>Getting started with a dedicated tool</h2>
+      <ol class="mt-4 list-decimal space-y-3 pl-5">
+        <li><strong>Run the free audit first.</strong> No account, no card — a full GEO score and 8-category breakdown for any URL, to see what a dedicated audit surfaces that a bundled module might not.</li>
+        <li><strong>Check the methodology before paying anything.</strong> GeoReady's scoring weights are public and auditable — see <a href="/methodology/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">how GEO scores are calculated</a>.</li>
+        <li><strong>Add citation tracking only when you need it.</strong> Studio ($49/mo) adds automated Perplexity citation checks and competitor comparison — the closest GeoReady equivalent to Semrush's brand-mention tracking, though narrower in engine coverage today.</li>
+        <li><strong>Run a citation check on your own brand</strong> with <a href="/tools/ai-citation-checker/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">the AI citation checker</a> before committing to a monitoring plan, to see whether ongoing tracking is even worth it for your current visibility.</li>
+        <li><strong>See the wider field.</strong> For a category-wide comparison beyond Semrush specifically, see <a href="/best-geo-tools/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">how GEO tools compare</a>.</li>
+      </ol>
+    </section>
+
+    {/* FAQ */}
+    <section class="mb-12 md:mb-16">
+      <h2>Frequently asked questions</h2>
+      <div class="mt-6 space-y-6">
+        {faqs.map((faq) => (
+          <div>
+            <h3>{faq.q}</h3>
+            <p class="mt-2">{faq.a}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* Bottom CTA */}
+    <section class="mb-12 md:mb-16 rounded-[4px] border border-rail bg-white p-6">
+      <h2>Start with the free audit</h2>
+      <p class="mt-4">
+        No account, no card, no suite required. See your GEO score, then decide if dedicated
+        AI-visibility monitoring is worth $19–49/month on top.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/ai-seo-audit/" class="inline-flex items-center justify-center rounded-[4px] bg-pass-deep px-6 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-pass-deep/90">
+          Run a free AI SEO audit
+        </a>
+        <a href="/pricing/" class="inline-flex items-center justify-center rounded-[4px] border border-rail px-6 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:border-ink">
+          See plans
+        </a>
+      </div>
+    </section>
+
+    {/* About the author */}
+    <section>
+      <h2>About the author</h2>
+      <p class="mt-4 font-semibold text-ink">Juan Camilo Auriti</p>
+      <p class="mt-2">
+        Founder of Auriti Labs and author of GEO Optimizer, the MIT-licensed engine whose scoring
+        weights and 47 citability methods are published in the
+        <a href="https://github.com/Auriti-Labs/geo-optimizer-skill" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">public repository</a>.
+        The GeoReady figures on this page come from <code>pricing.md</code>, the product's own
+        live pricing page.
+      </p>
+      <p class="mt-3 text-sm text-ink-mute">
+        Reviewed and updated September 16, 2026 ·
+        <a href="/methodology/" class="underline underline-offset-2 hover:text-ink">Methodology</a>
+      </p>
+    </section>
+  </article>
+
+  {/* Page-specific schema — WebPage con autore Person (byline nominato), niente FAQPage/HowTo/AggregateRating */}
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": title,
+    "headline": 'Semrush AI Visibility Toolkit Alternative: What It Is, What It Costs, and When to Use Something Else',
+    "description": description,
+    "url": canonical,
+    "datePublished": datePublished,
+    "dateModified": dateModified,
+    "author": { "@id": "https://geoready.dev/#founder" },
+    "publisher": { "@id": "https://geoready.dev/#organization" }
+  })} />
+
+  {/* BreadcrumbList — coerente con le altre pagine */}
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "GeoReady", "item": "https://geoready.dev/" },
+      { "@type": "ListItem", "position": 2, "name": "Semrush AI Visibility Toolkit Alternative", "item": canonical }
+    ]
+  })} />
+</Shell>

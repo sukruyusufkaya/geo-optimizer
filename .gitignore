@@ -1,0 +1,70 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Virtual environments
+.env
+.venv/
+venv/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Claude Code
+CLAUDE.md
+
+# GEO Optimizer cache
+.geo-cache/
+
+# Other
+node_modules/
+docs_dev/
+.claude/
+
+# Documenti interni (marketing, strategia, decisioni)
+.agents/
+docs/product/
+docs/strategy/
+
+# Local caches
+local_cache/
+.codex
+.mypy_cache/
+
+# Generated graph analysis output (graphify tool)
+graphify-out/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# OpenCode's local MCP config — personal tooling preference, not a project convention.
+/opencode.json

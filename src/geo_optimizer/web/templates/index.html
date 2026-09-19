@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEO Optimizer — AI Search Visibility Audit</title>
+<meta name="description" content="Audit your website's visibility to AI search engines. Score 0-100 with actionable fixes for ChatGPT, Perplexity, Claude, Gemini.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06080f;--bg-card:#0d1117;--bg-card-hover:#111820;
+  --border:#1b2332;--border-hover:#2d3a4f;
+  --text:#e2e8f0;--text-dim:#64748b;--text-muted:#475569;
+  --accent:#3b82f6;--accent2:#8b5cf6;
+  --green:#22c55e;--cyan:#06b6d4;--yellow:#eab308;--red:#ef4444;
+  --radius:12px;--radius-sm:8px;
+  --font:'DM Sans',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none;transition:color .2s}
+a:hover{color:var(--accent2)}
+code{font-family:var(--mono);font-size:.85em;background:#1e293b;padding:.15em .4em;border-radius:4px}
+
+/* Grain overlay */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  opacity:.03;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* Glow orbs */
+.glow-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+.glow-orb.blue{width:400px;height:400px;background:rgba(59,130,246,.08);top:-100px;left:-100px}
+.glow-orb.purple{width:350px;height:350px;background:rgba(139,92,246,.06);bottom:-50px;right:-50px}
+
+.wrapper{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:2rem 1.5rem}
+
+/* ─── Professional Nav ─── */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;margin-bottom:2.5rem;background:rgba(6,8,15,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.nav-logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;color:var(--text);white-space:nowrap;text-decoration:none}
+.nav-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px var(--green)}
+.nav-logo .ver{font-family:var(--mono);font-size:.65rem;color:var(--accent);background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:.1rem .4rem;border-radius:20px;margin-left:.25rem}
+.nav-links{display:flex;align-items:center;gap:1.75rem}
+.nav-links a{color:var(--text-dim);font-size:.82rem;font-weight:500;letter-spacing:.02em;transition:color .2s;white-space:nowrap;text-decoration:none}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-sep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.nav-dropdown{position:relative}
+.nav-dropdown-toggle{display:flex;align-items:center;gap:.3rem;color:var(--text-dim);font-size:.82rem;font-weight:500;letter-spacing:.02em;cursor:pointer;transition:color .2s;white-space:nowrap;background:none;border:none;font-family:inherit;padding:0}
+.nav-dropdown-toggle:hover,.nav-dropdown.open .nav-dropdown-toggle{color:var(--text)}
+.nav-dropdown-toggle svg{width:10px;height:10px;fill:currentColor;transition:transform .2s}
+.nav-dropdown.open .nav-dropdown-toggle svg{transform:rotate(180deg)}
+.nav-dropdown-menu{display:none;position:absolute;top:calc(100% + .75rem);right:0;min-width:160px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.35rem;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.nav-dropdown.open .nav-dropdown-menu{display:block}
+.nav-dropdown-menu a{display:block;padding:.5rem .75rem;color:var(--text-dim);font-size:.82rem;font-weight:500;border-radius:6px;transition:all .15s;text-decoration:none}
+.nav-dropdown-menu a:hover{color:var(--text);background:var(--bg-card-hover)}
+.nav-dropdown-menu a.active{color:var(--text)}
+.nav-cta{display:flex;align-items:center;gap:.4rem;color:var(--text-dim);font-size:.82rem;font-weight:500;border:1px solid var(--border);padding:.35rem .75rem;border-radius:20px;transition:all .2s;white-space:nowrap;text-decoration:none}
+.nav-cta:hover{color:var(--text);border-color:var(--border-hover)}
+.nav-cta svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
+.nav-cta .star-count{font-family:var(--mono);font-size:.75rem}
+.nav-hamburger{display:none;background:none;border:1px solid var(--border);color:var(--text-dim);padding:.3rem .5rem;border-radius:6px;cursor:pointer;font-size:1.1rem;line-height:1;transition:all .2s}
+.nav-hamburger:hover{border-color:var(--border-hover);color:var(--text)}
+@media(max-width:768px){
+  nav{flex-wrap:wrap;gap:.5rem;padding:.6rem .75rem}
+  .nav-links{display:none;width:100%;flex-direction:column;gap:0;border-top:1px solid var(--border);padding-top:.5rem;margin-top:.25rem}
+  .nav-links.open{display:flex}
+  .nav-links a{padding:.55rem .25rem;border-bottom:1px solid var(--border);font-size:.9rem}
+  .nav-links a:last-child{border-bottom:none}
+  .nav-sep{display:none}
+  .nav-dropdown{width:100%}
+  .nav-dropdown-toggle{padding:.55rem .25rem;border-bottom:1px solid var(--border);font-size:.9rem;width:100%}
+  .nav-dropdown-menu{position:static;border:none;box-shadow:none;background:transparent;padding:0 0 0 1rem;display:none}
+  .nav-dropdown.open .nav-dropdown-menu{display:block}
+  .nav-dropdown-menu a{padding:.45rem .25rem;border-bottom:1px solid var(--border);border-radius:0}
+  .nav-hamburger{display:block}
+  .nav-logo .ver{display:none}
+  .nav-cta .star-count{display:none}
+}
+@media(max-width:480px){
+  .nav-cta span:not(.star-count){font-size:.8rem}
+}
+.version-badge{display:none}
+
+/* ─── Hero ─── */
+.hero{text-align:center;margin-bottom:2.5rem}
+.hero h1{font-size:2.8rem;font-weight:700;letter-spacing:-.03em;
+  background:linear-gradient(135deg,#60a5fa 0%,#a78bfa 50%,#60a5fa 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 4s ease infinite}
+@keyframes shimmer{0%,100%{background-position:0% center}50%{background-position:200% center}}
+.hero p{color:var(--text-dim);font-size:1.05rem;margin-top:.5rem;max-width:480px;margin-inline:auto}
+
+/* ─── Stats ─── */
+.stats-bar{display:flex;justify-content:center;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap}
+.stat-chip{display:flex;align-items:center;gap:.35rem;
+  background:var(--bg-card);border:1px solid var(--border);
+  padding:.35rem .7rem;border-radius:20px;font-size:.78rem;color:var(--text-dim);
+  font-family:var(--mono);transition:border-color .2s}
+.stat-chip:hover{border-color:var(--border-hover)}
+.stat-chip .num{color:var(--text);font-weight:500}
+
+/* ─── Form ─── */
+.audit-form{display:flex;gap:.5rem;margin-bottom:1.5rem}
+.audit-form input{flex:1;padding:.8rem 1rem;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);
+  font-family:var(--font);font-size:.95rem;outline:none;transition:border-color .25s,box-shadow .25s}
+.audit-form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.audit-form input::placeholder{color:var(--text-muted)}
+.audit-form input:invalid:not(:placeholder-shown){border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+.audit-form{flex-wrap:wrap}
+.input-hint{width:100%;font-size:.8rem;color:#ef4444;margin-top:-.5rem}
+.btn-primary{padding:.8rem 1.8rem;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-family:var(--font);font-size:.95rem;font-weight:600;
+  cursor:pointer;transition:opacity .2s,transform .1s;white-space:nowrap}
+.btn-primary:hover{opacity:.9}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ─── Spinner ─── */
+.spinner{display:none;text-align:center;padding:1.5rem 0}
+.spinner.active{display:block}
+.spinner-ring{width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto .75rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner-text{color:var(--text-dim);font-size:.85rem;transition:opacity .3s}
+
+/* ─── Error ─── */
+.error{display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
+  border-radius:var(--radius-sm);padding:.75rem 1rem;color:var(--red);font-size:.9rem;margin-bottom:1rem}
+
+/* ─── Result Card ─── */
+.result-card{display:none;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;
+  animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Score Gauge */
+.gauge-wrap{text-align:center;padding:1.5rem 0}
+.gauge-svg{width:160px;height:160px}
+.gauge-bg{fill:none;stroke:var(--border);stroke-width:8}
+.gauge-fill{fill:none;stroke-width:8;stroke-linecap:round;
+  transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1),stroke 1s ease}
+.gauge-score{font-family:var(--mono);font-size:2.2rem;font-weight:700;fill:var(--text)}
+.gauge-label{font-size:.75rem;fill:var(--text-dim);text-transform:uppercase;letter-spacing:.1em}
+.band-tag{display:inline-block;font-size:.8rem;font-weight:600;letter-spacing:.05em;
+  padding:.25rem .75rem;border-radius:20px;margin-top:.5rem;text-transform:uppercase}
+
+/* Breakdown bars */
+.breakdown{margin-top:1.25rem}
+.bar-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;font-size:.82rem}
+.bar-label{width:110px;color:var(--text-dim);text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.bar-val{width:32px;font-family:var(--mono);color:var(--text-dim);font-size:.78rem}
+
+/* Citability */
+.citability{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;
+  padding-top:1rem;border-top:1px solid var(--border)}
+.cit-score{font-family:var(--mono);font-size:1.5rem;font-weight:700}
+.cit-label{font-size:.82rem;color:var(--text-dim)}
+
+/* Trend */
+.trend-box{display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.trend-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.trend-kicker{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em}
+.trend-summary{font-size:.9rem;color:var(--text);font-weight:600;margin-top:.25rem}
+.trend-delta{font-family:var(--mono);font-size:1.1rem;font-weight:700}
+.trend-list{display:grid;gap:.6rem;margin-top:.85rem}
+.trend-row{display:grid;grid-template-columns:74px 82px 1fr;gap:.75rem;align-items:center}
+.trend-date{font-family:var(--mono);font-size:.75rem;color:var(--text-dim)}
+.trend-score{font-family:var(--mono);font-size:.78rem;color:var(--text)}
+.trend-bar{height:7px;background:var(--border);border-radius:999px;overflow:hidden}
+.trend-fill{display:block;height:100%;background:linear-gradient(90deg,#06b6d4,#22c55e)}
+
+/* Recommendations */
+.recs-section{margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
+.recs-toggle{background:none;border:none;color:var(--accent);cursor:pointer;
+  font-family:var(--font);font-size:.85rem;font-weight:500;padding:0;display:flex;align-items:center;gap:.35rem}
+.recs-toggle .arrow{transition:transform .2s;display:inline-block}
+.recs-toggle.open .arrow{transform:rotate(90deg)}
+.recs-list{list-style:none;margin-top:.75rem;display:none}
+.recs-list.open{display:block}
+.recs-list li{padding:.35rem 0;padding-left:1rem;position:relative;
+  color:var(--text-dim);font-size:.83rem;line-height:1.5}
+.recs-list li::before{content:'';position:absolute;left:0;top:.65rem;
+  width:5px;height:5px;border-radius:50%;background:var(--yellow)}
+
+/* Actions row */
+.actions{display:flex;gap:.75rem;justify-content:center;margin-top:1.25rem;flex-wrap:wrap}
+.action-link{font-size:.82rem;color:var(--text-dim);border:1px solid var(--border);
+  padding:.4rem .8rem;border-radius:20px;transition:all .2s}
+.action-link:hover{color:var(--text);border-color:var(--border-hover)}
+
+/* ─── Manifesto Teaser ─── */
+.manifesto-teaser{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
+.manifesto-teaser h3{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.5rem}
+.manifesto-teaser p{color:var(--text-dim);font-size:.85rem;line-height:1.65;margin-bottom:.85rem}
+.manifesto-pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem}
+.manifesto-pill{font-size:.75rem;font-weight:500;padding:.25rem .6rem;border-radius:20px;border:1px solid var(--border);color:var(--text-dim)}
+.manifesto-link{font-size:.82rem;color:var(--accent);font-weight:500}
+.manifesto-link:hover{color:var(--accent2)}
+
+/* ─── Footer ─── */
+footer{text-align:center;padding:2rem 0 1rem;border-top:1px solid var(--border);
+  margin-top:2rem;color:var(--text-muted);font-size:.8rem}
+footer .install-row{display:flex;align-items:center;justify-content:center;gap:.5rem;
+  margin-bottom:1rem}
+footer .install-cmd{font-family:var(--mono);font-size:.8rem;background:var(--bg-card);
+  border:1px solid var(--border);padding:.4rem .8rem;border-radius:var(--radius-sm);color:var(--text-dim)}
+footer .copy-btn{background:none;border:1px solid var(--border);color:var(--text-dim);
+  padding:.3rem .5rem;border-radius:4px;cursor:pointer;font-size:.75rem;transition:all .2s}
+footer .copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+footer .links{display:flex;justify-content:center;gap:1.25rem;margin-bottom:.75rem}
+footer .links a{color:var(--text-muted);font-size:.8rem}
+footer .credit{font-size:.72rem;color:var(--text-muted)}
+
+/* ─── Responsive ─── */
+@media(max-width:600px){
+  .wrapper{padding:1.25rem 1rem}
+  .hero h1{font-size:2rem}
+  .audit-form{flex-direction:column}
+  .btn-primary{width:100%}
+  .bar-label{width:80px;font-size:.75rem}
+  nav{gap:.75rem;flex-wrap:wrap}
+}
+
+/* ─── Floating cookie settings button ─── */
+/* ─── Cookie Banner ─── */
+@keyframes cookieSlideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.cookie-banner{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  padding:1.25rem 2rem;
+  background:linear-gradient(135deg,rgba(13,17,23,0.97) 0%,rgba(17,24,40,0.97) 100%);
+  border-top:1px solid rgba(59,130,246,0.18);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:0 -8px 40px rgba(0,0,0,0.5),0 -1px 0 rgba(59,130,246,0.08);
+  animation:cookieSlideUp .4s cubic-bezier(.16,1,.3,1) both;
+}
+.cookie-banner-content{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;
+}
+.cookie-banner-icon{
+  flex-shrink:0;width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(139,92,246,0.15));
+  border:1px solid rgba(59,130,246,0.2);
+  display:flex;align-items:center;justify-content:center;
+  color:#3b82f6;
+}
+.cookie-banner-icon svg{width:22px;height:22px}
+.cookie-banner-text{flex:1;min-width:220px}
+.cookie-banner-title{
+  font-size:.95rem;font-weight:600;color:#e2e8f0;margin-bottom:.25rem;
+  background:linear-gradient(90deg,#e2e8f0,#94a3b8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.cookie-banner-description{font-size:.82rem;color:#64748b;line-height:1.55}
+.cookie-banner-link{color:#3b82f6;text-decoration:none;border-bottom:1px solid rgba(59,130,246,0.3);transition:border-color .2s}
+.cookie-banner-link:hover{border-color:#3b82f6}
+.cookie-banner-actions{display:flex;gap:.75rem;flex-shrink:0;align-items:center}
+
+/* ─── Cookie Buttons ─── */
+.cookie-btn{
+  padding:.55rem 1.25rem;border-radius:8px;font-size:.85rem;font-weight:600;
+  cursor:pointer;border:none;font-family:inherit;transition:all .2s;white-space:nowrap;
+}
+.cookie-btn-primary{
+  background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;
+  box-shadow:0 2px 12px rgba(59,130,246,0.3);
+}
+.cookie-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,0.45)}
+.cookie-btn-secondary{
+  background:transparent;color:#94a3b8;
+  border:1px solid rgba(255,255,255,0.1);
+}
+.cookie-btn-secondary:hover{background:rgba(255,255,255,0.05);color:#e2e8f0;border-color:rgba(255,255,255,0.2)}
+
+/* ─── Cookie Modal ─── */
+.cookie-modal{
+  position:fixed;inset:0;z-index:10000;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.cookie-modal:not([hidden]){display:flex;pointer-events:auto}
+.cookie-modal.active{pointer-events:auto}
+.cookie-modal.active{opacity:1}
+.cookie-modal-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.cookie-modal-content{
+  position:relative;z-index:1;width:100%;max-width:480px;
+  background:linear-gradient(145deg,#0d1117,#111820);
+  border:1px solid rgba(59,130,246,0.15);border-radius:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.04);
+  overflow:hidden;
+  transform:translateY(16px) scale(.98);transition:transform .3s cubic-bezier(.16,1,.3,1);
+}
+.cookie-modal.active .cookie-modal-content{transform:none}
+.cookie-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.5rem 1.5rem 1rem;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.cookie-modal-header h2{
+  font-size:1.1rem;font-weight:700;
+  background:linear-gradient(90deg,#e2e8f0 0%,#8b5cf6 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.cookie-modal-close{
+  width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.04);color:#64748b;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.cookie-modal-close:hover{background:rgba(255,255,255,0.08);color:#e2e8f0;border-color:rgba(255,255,255,0.15)}
+.cookie-modal-close svg{width:16px;height:16px}
+.cookie-modal-body{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem}
+.cookie-category{
+  padding:1rem;border-radius:12px;
+  background:rgba(255,255,255,0.025);
+  border:1px solid rgba(255,255,255,0.06);
+  transition:border-color .2s;
+}
+.cookie-category:hover{border-color:rgba(59,130,246,0.15)}
+.cookie-category-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.5rem}
+.cookie-category-header h3{font-size:.875rem;font-weight:600;color:#e2e8f0}
+.cookie-category-desc{font-size:.78rem;color:#475569;line-height:1.6}
+.cookie-modal-footer{
+  display:flex;gap:.75rem;padding:1rem 1.5rem 1.5rem;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.cookie-modal-footer .cookie-btn{flex:1}
+
+/* ─── Toggle Switch ─── */
+.cookie-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.cookie-switch input{opacity:0;width:0;height:0;position:absolute}
+.cookie-slider{
+  position:absolute;inset:0;border-radius:24px;cursor:pointer;
+  background:#1b2332;border:1px solid rgba(255,255,255,0.08);
+  transition:all .25s;
+}
+.cookie-slider:before{
+  content:'';position:absolute;height:16px;width:16px;
+  left:3px;top:50%;transform:translateY(-50%);
+  border-radius:50%;background:#475569;transition:all .25s;
+}
+input:checked + .cookie-slider{
+  background:linear-gradient(135deg,#3b82f6,#6366f1);
+  border-color:transparent;box-shadow:0 0 12px rgba(59,130,246,0.35);
+}
+input:checked + .cookie-slider:before{transform:translateY(-50%) translateX(20px);background:#fff}
+input:disabled + .cookie-slider{opacity:.5;cursor:not-allowed}
+
+/* ─── Floating cookie button ─── */
+.cookie-float-btn{
+  position:fixed;bottom:1.5rem;left:1.5rem;z-index:9990;
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(13,17,23,0.92);
+  border:1px solid rgba(59,130,246,0.2);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;text-decoration:none;color:#64748b;
+  transition:all .25s;box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.cookie-float-btn:hover{color:#3b82f6;border-color:#3b82f6;box-shadow:0 4px 20px rgba(59,130,246,0.2);transform:scale(1.08)}
+.cookie-float-btn svg{width:18px;height:18px}
+
+@media(max-width:640px){
+  .cookie-banner{padding:1rem}
+  .cookie-banner-content{flex-direction:column;align-items:flex-start;gap:1rem}
+  .cookie-banner-actions{width:100%;justify-content:flex-end}
+  .cookie-modal-content{border-radius:14px}
+}
+</style>
+
+<!-- GEO: Schema JSON-LD -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"GEO Optimizer","url":"https://geoready.dev","description":"Open-source toolkit to audit, fix, and optimize websites for AI search engine visibility. Score 0-100 based on 47 research-backed methods.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"Auriti Labs","url":"https://github.com/Auriti-Labs","sameAs":["https://github.com/Auriti-Labs","https://pypi.org/project/geo-optimizer-skill/","https://www.linkedin.com/company/auriti-labs","https://www.crunchbase.com/organization/auriti-labs"],"contactPoint":{"@type":"ContactPoint","contactType":"technical support","email":"juancamilo.auriti@gmail.com","url":"https://github.com/Auriti-Labs/geo-optimizer-skill/issues"},"address":{"@type":"PostalAddress","addressCountry":"IT"}}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is GEO Optimizer?","acceptedAnswer":{"@type":"Answer","text":"GEO Optimizer is an open-source toolkit that audits websites for AI search engine visibility. It scores sites 0-100 based on 47 research-backed methods and generates fixes for robots.txt, llms.txt, JSON-LD schema, and meta tags."}},{"@type":"Question","name":"How does the GEO score work?","acceptedAnswer":{"@type":"Answer","text":"The score is calculated across 8 categories: robots.txt (18pt), llms.txt (18pt), JSON-LD schema (16pt), meta tags (14pt), content quality (12pt), signals (6pt), AI discovery (6pt), brand & entity (10pt). Bands: 86-100 excellent, 68-85 good, 36-67 foundation, 0-35 critical."}},{"@type":"Question","name":"Is GEO Optimizer free?","acceptedAnswer":{"@type":"Answer","text":"Yes, GEO Optimizer is free and open-source under MIT License. Install with: pip install geo-optimizer-skill"}}]}
+</script>
+<link rel="alternate" type="application/rss+xml" title="GEO Optimizer Updates" href="https://github.com/Auriti-Labs/geo-optimizer-skill/releases.atom">
+
+<!-- SEO: Open Graph / Social Media -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="GEO Optimizer — AI Search Visibility Audit">
+<meta property="og:description" content="Audit your website's visibility to AI search engines. Score 0-100 with actionable fixes for ChatGPT, Perplexity, Claude, Gemini.">
+<meta property="og:url" content="https://geoready.dev/">
+<meta property="og:image" content="https://geoready.dev/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="GEO Optimizer">
+<meta property="og:locale" content="en_US">
+
+<!-- SEO: Canonical URL -->
+<link rel="canonical" href="https://geoready.dev/">
+
+<!-- SEO: Canonical URL -->
+<link rel="canonical" href="https://geoready.dev/">
+</head>
+<body>
+<div class="glow-orb blue"></div>
+<div class="glow-orb purple"></div>
+
+<div class="wrapper">
+  <nav>
+    <div class="nav-logo">
+      <span class="dot"></span>
+      <span>GEO Optimizer</span>
+      <span class="ver" id="nav-ver">v4.0.0</span>
+    </div>
+    <button class="nav-hamburger" id="nav-ham" aria-label="Menu">&#9776;</button>
+    <div class="nav-links">
+      <a href="/" class="active">Audit</a>
+      <a href="/compare">Compare</a>
+      <a href="https://auriti-labs.github.io/geo-optimizer-skill/">Docs</a>
+      <span class="nav-sep"></span>
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-toggle" aria-expanded="false">More <svg viewBox="0 0 10 6" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav-dropdown-menu">
+          <a href="/research">Research</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/manifesto">Manifesto</a>
+        </div>
+      </div>
+    </div>
+    <a class="nav-cta" href="https://github.com/Auriti-Labs/geo-optimizer-skill" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" fill="currentColor"/></svg>
+      GitHub
+      <span class="star-count" id="nav-stars"></span>
+    </a>
+  </nav>
+
+  <div class="hero">
+    <h1>GEO Optimizer</h1>
+    <p>Audit your website's visibility to ChatGPT, Perplexity, Claude &amp; Gemini</p>
+  </div>
+
+  <div class="stats-bar" id="stats-bar">
+    <span class="stat-chip"><span id="ic-star">&#9733;</span> <span class="num" id="stars">—</span> stars</span>
+    <span class="stat-chip">&#128230; <span class="num" id="downloads">—</span>/mo</span>
+    <span class="stat-chip">&#128269; <span class="num" id="audits">—</span> audits</span>
+  </div>
+
+  <div class="audit-form">
+    <input type="url" id="url-input" placeholder="https://example.com" required autocomplete="url"
+      pattern="https?://.*\..*" title="Insert a valid URL (es. https://example.com)"
+      aria-label="Website URL to audit">
+    <button class="btn-primary" id="btn">Run Audit</button>
+    <div class="input-hint" id="url-hint" style="display:none"></div>
+  </div>
+
+  <div class="spinner" id="spinner" aria-live="polite" role="status">
+    <div class="spinner-ring"></div>
+    <div class="spinner-text" id="spin-text">Connecting...</div>
+  </div>
+  <div class="error" id="error"></div>
+
+  <div class="result-card" id="result">
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="0 0 120 120">
+        <circle class="gauge-bg" cx="60" cy="60" r="50"/>
+        <circle class="gauge-fill" id="gauge-fill" cx="60" cy="60" r="50"
+          stroke-dasharray="314.16" stroke-dashoffset="314.16"
+          transform="rotate(-90 60 60)"/>
+        <text class="gauge-score" id="gauge-score" x="60" y="58" text-anchor="middle" dominant-baseline="middle">0</text>
+        <text class="gauge-label" x="60" y="76" text-anchor="middle">/ 100</text>
+      </svg>
+      <div><span class="band-tag" id="band-tag">—</span></div>
+    </div>
+
+    <div class="breakdown" id="breakdown"></div>
+
+    <div class="citability" id="cit-wrap" style="display:none">
+      <div>
+        <div class="cit-score" id="cit-score">—</div>
+        <div class="cit-label">Citability Score</div>
+      </div>
+      <div class="cit-label" id="cit-grade" style="margin-left:auto"></div>
+    </div>
+
+    <div class="trend-box" id="trend-box">
+      <div class="trend-head">
+        <div>
+          <div class="trend-kicker">Trend</div>
+          <div class="trend-summary" id="trend-summary">Baseline snapshot saved for this URL.</div>
+        </div>
+        <div class="trend-delta" id="trend-delta">—</div>
+      </div>
+      <div class="trend-list" id="trend-list"></div>
+    </div>
+
+    <div class="recs-section">
+      <button class="recs-toggle" id="recs-toggle">
+        <span class="arrow">&#9654;</span> Recommendations <span id="recs-count"></span>
+      </button>
+      <ol class="recs-list" id="recs-list"></ol>
+    </div>
+
+    <div class="actions" id="actions"></div>
+  </div>
+
+  <div class="manifesto-teaser">
+    <h3>Why this tool exists</h3>
+    <p>AI search is already deciding which websites get cited and which don't. The signals are documented, the research is published — but most of the web has no idea. GEO Optimizer exists to make AI visibility auditable, transparent, and accessible to every developer, not just teams with enterprise budgets.</p>
+    <div class="manifesto-pills">
+      <span class="manifesto-pill">Auditability</span>
+      <span class="manifesto-pill">Scientific Foundation</span>
+      <span class="manifesto-pill">Open Source</span>
+      <span class="manifesto-pill">Precision</span>
+    </div>
+    <a class="manifesto-link" href="/manifesto">Read the full manifesto →</a>
+  </div>
+
+  <footer>
+    <div class="install-row">
+      <span class="install-cmd">pip install geo-optimizer-skill</span>
+      <button class="copy-btn" id="copy-btn" title="Copy">&#128203;</button>
+    </div>
+    <div class="links">
+      <a href="https://github.com/auriti-labs/geo-optimizer-skill">GitHub</a>
+      <a href="https://pypi.org/project/geo-optimizer-skill/">PyPI</a>
+      <a href="https://auriti-labs.github.io/geo-optimizer-skill/">Docs</a>
+      <a href="https://github.com/auriti-labs/geo-optimizer-skill/issues">Issues</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div class="credit">Built by Auriti Labs &#183; Powered by Princeton KDD 2024 + AutoGEO ICLR 2026 research</div>
+  </footer>
+</div>
+
+<!-- Cookie Consent Banner - GDPR Compliant -->
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-live="polite">
+  <div class="cookie-banner-content">
+    <div class="cookie-banner-icon">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <path d="M9 10h.01"></path>
+        <path d="M15 10h.01"></path>
+        <path d="M12 14h.01"></path>
+      </svg>
+    </div>
+    <div class="cookie-banner-text">
+      <p class="cookie-banner-title">We respect your privacy</p>
+      <p class="cookie-banner-description">
+        This site uses essential and analytics cookies to deliver a better browsing experience.
+        <a href="/privacy" class="cookie-banner-link">Learn more</a>
+      </p>
+    </div>
+    <div class="cookie-banner-actions">
+      <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-manage">
+        Manage
+      </button>
+      <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-all">
+        Accept all
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Cookie Settings Modal -->
+<div id="cookie-modal" class="cookie-modal" role="dialog" aria-modal="true" hidden>
+  <div class="cookie-modal-overlay" id="cookie-modal-overlay"></div>
+  <div class="cookie-modal-content">
+    <div class="cookie-modal-header">
+      <h2>Cookie Settings</h2>
+      <button type="button" class="cookie-modal-close" id="cookie-modal-close">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="cookie-modal-body">
+      <div class="cookie-category">
+        <div class="cookie-category-header">
+          <h3>Essential Cookies</h3>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookie-essential" checked disabled>
+            <span class="cookie-slider"></span>
+          </label>
+        </div>
+        <p class="cookie-category-desc">
+          Strictly necessary for the site to function. They cannot be disabled and include session, security, and preference cookies.
+        </p>
+      </div>
+
+      <div class="cookie-category">
+        <div class="cookie-category-header">
+          <h3>Analytics Cookies</h3>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookie-analytics">
+            <span class="cookie-slider"></span>
+          </label>
+        </div>
+        <p class="cookie-category-desc">
+          Help us understand how visitors interact with the site. Data is aggregated and anonymous. Disabling them prevents Google Analytics from loading.
+        </p>
+      </div>
+
+      <div class="cookie-category">
+        <div class="cookie-category-header">
+          <h3>Marketing Cookies</h3>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookie-marketing">
+            <span class="cookie-slider"></span>
+          </label>
+        </div>
+        <p class="cookie-category-desc">
+          Used to serve relevant ads. Disabling them results in less personalised advertising.
+        </p>
+      </div>
+    </div>
+
+    <div class="cookie-modal-footer">
+      <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-save">
+        Save preferences
+      </button>
+      <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-reject-all">
+        Reject all
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Cookie Consent Styles (injected via script) -->
+<script__NONCE_ATTR__>
+/* ─── Cookie Consent Management ─── */
+(function() {
+  'use strict';
+
+  const COOKIE_CONSENT = 'cookie_consent';
+  const GA_ID = 'G-KV5MQTGFZG';
+  const DEFAULT_CONSENT = { essential: true, analytics: false, marketing: false };
+
+  const banner = document.getElementById('cookie-banner');
+  const modal  = document.getElementById('cookie-modal');
+  const overlay = document.getElementById('cookie-modal-overlay');
+
+  let consent = loadConsent();
+  let consentGiven = hasStoredConsent();
+
+  function loadConsent() {
+    try {
+      const s = localStorage.getItem(COOKIE_CONSENT);
+      if (s) return { ...DEFAULT_CONSENT, ...JSON.parse(s) };
+      const c = document.cookie.split(';').find(c => c.trim().startsWith(COOKIE_CONSENT + '='));
+      if (c) return { ...DEFAULT_CONSENT, ...JSON.parse(decodeURIComponent(c.split('=')[1])) };
+    } catch(e) { console.warn('Cookie consent load error', e); }
+    return { ...DEFAULT_CONSENT };
+  }
+
+  function hasStoredConsent() {
+    try {
+      if (localStorage.getItem(COOKIE_CONSENT)) return true;
+      if (document.cookie.split(';').some(c => c.trim().startsWith(COOKIE_CONSENT + '='))) return true;
+    } catch(e) {}
+    return false;
+  }
+
+  function saveConsent(obj) {
+    try {
+      localStorage.setItem(COOKIE_CONSENT, JSON.stringify(obj));
+      const exp = new Date();
+      exp.setFullYear(exp.getFullYear() + 1);
+      var secure = location.protocol === 'https:' ? ';Secure' : '';
+      document.cookie = COOKIE_CONSENT + '=' + encodeURIComponent(JSON.stringify(obj)) + ';expires=' + exp.toUTCString() + ';path=/;SameSite=Lax' + secure;
+    } catch(e) { console.warn('Cookie consent save error', e); }
+  }
+
+  function showBanner() { banner.style.display = 'flex'; }
+  function hideBanner()  { banner.style.display = 'none'; }
+
+  function openModal() {
+    document.getElementById('cookie-essential').checked = true;
+    document.getElementById('cookie-analytics').checked = consent.analytics;
+    document.getElementById('cookie-marketing').checked = consent.marketing;
+    modal.hidden = false;
+    setTimeout(function() {
+      modal.classList.add('active');
+      if (overlay) overlay.style.opacity = '1';
+      document.getElementById('cookie-analytics').focus();
+    }, 10);
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    if (overlay) overlay.style.opacity = '0';
+    setTimeout(function() { modal.hidden = true; }, 300);
+  }
+
+  function acceptAll() {
+    consent = { essential: true, analytics: true, marketing: true };
+    saveConsent(consent);
+    consentGiven = true;
+    hideBanner();
+    loadGA();
+  }
+
+  function rejectAll() {
+    consent = { essential: true, analytics: false, marketing: false };
+    saveConsent(consent);
+    consentGiven = true;
+    closeModal();
+    hideBanner();
+    disableTracking();
+  }
+
+  function savePreferences() {
+    consent = {
+      essential: true,
+      analytics: document.getElementById('cookie-analytics').checked,
+      marketing: document.getElementById('cookie-marketing').checked
+    };
+    saveConsent(consent);
+    consentGiven = true;
+    closeModal();
+    hideBanner();
+    if (consent.analytics) loadGA(); else disableTracking();
+  }
+
+  function loadGA() {
+    if (!consent.analytics) return;
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', GA_ID, { anonymize_ip: true });
+    var s = document.createElement('script');
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    s.async = true;
+    document.head.appendChild(s);
+  }
+
+  function disableTracking() {
+    var s = document.querySelector('script[src*="googletagmanager.com"]');
+    if (s) s.remove();
+    document.cookie.split(';').forEach(function(c) {
+      var n = c.trim().split('=')[0];
+      if (n.startsWith('_ga') || n.startsWith('_gcl')) {
+        document.cookie = n + '=;expires=Thu,01 Jan 1970 00:00:00 GMT;path=/;domain=' + location.hostname;
+        document.cookie = n + '=;expires=Thu,01 Jan 1970 00:00:00 GMT;path=/;domain=.' + location.hostname;
+      }
+    });
+  }
+
+  function init() {
+    // Attach listeners always (regardless of prior consent)
+    document.getElementById('cookie-accept-all').addEventListener('click', acceptAll);
+    document.getElementById('cookie-manage').addEventListener('click', openModal);
+    document.getElementById('cookie-reject-all').addEventListener('click', rejectAll);
+    document.getElementById('cookie-save').addEventListener('click', savePreferences);
+    document.getElementById('cookie-modal-close').addEventListener('click', closeModal);
+    if (overlay) overlay.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+
+    if (consentGiven) {
+      hideBanner();
+      loadGA();
+    } else {
+      showBanner();
+    }
+  }
+
+  // Expose globally for floating button
+  window.openCookieModal = openModal;
+
+  init();
+})();
+</script>
+
+<script__NONCE_ATTR__>
+/* ─── Constants ─── */
+const BANDS = {excellent:'#22c55e',good:'#06b6d4',foundation:'#eab308',critical:'#ef4444'};
+const CATEGORIES = [
+  {key:'robots',label:'Robots.txt',max:18},
+  {key:'llms',label:'llms.txt',max:18},
+  {key:'schema',label:'Schema JSON-LD',max:16},
+  {key:'meta',label:'Meta Tags',max:14},
+  {key:'content',label:'Content',max:12},
+  {key:'signals',label:'Signals',max:6},
+  {key:'ai_discovery',label:'AI Discovery',max:6},
+  {key:'brand_entity',label:'Brand & Entity',max:10},
+];
+const SPIN_MSGS = ['Checking robots.txt...','Analyzing llms.txt...','Parsing schema...','Evaluating content...','Scoring citability...','Compiling results...'];
+
+/* ─── Version + Stats ─── */
+(async function init(){
+  try{
+    const h = await fetch('/health');
+    if(h.ok){const d=await h.json();var vb=document.getElementById('nav-ver');if(vb)vb.textContent='v'+d.version;}
+  }catch(e){}
+  try{
+    const s = await fetch('/api/stats');
+    if(s.ok){
+      const d=await s.json();
+      const fmt=n=>n>=1000?(n/1000).toFixed(1)+'k':String(n);
+      document.getElementById('stars').textContent=fmt(d.github_stars);
+      document.getElementById('downloads').textContent=fmt(d.pypi_downloads_month);
+      document.getElementById('audits').textContent=fmt(d.audits_run);
+      var ns=document.getElementById('nav-stars');if(ns&&d.github_stars)ns.textContent='★ '+d.github_stars;
+    }
+  }catch(e){}
+})();
+
+/* ─── Audit ─── */
+const $=id=>document.getElementById(id);
+let spinInterval;
+
+function startSpin(){
+  $('spinner').classList.add('active');
+  let i=0;
+  $('spin-text').textContent=SPIN_MSGS[0];
+  spinInterval=setInterval(()=>{i=(i+1)%SPIN_MSGS.length;$('spin-text').textContent=SPIN_MSGS[i]},2200);
+}
+function stopSpin(){$('spinner').classList.remove('active');clearInterval(spinInterval)}
+
+function isValidUrl(str){
+  /* Accetta URL con protocollo, oppure dominio semplice (es. example.com) */
+  if(/^https?:\/\/.+\..+/.test(str))return true;
+  /* Dominio senza protocollo: almeno un punto, niente spazi */
+  if(/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(str))return true;
+  return false;
+}
+
+async function runAudit(){
+  const input=$('url-input');
+  const hint=$('url-hint');
+  let url=input.value.trim();
+  if(!url){hint.style.display='none';return}
+  /* Validazione lato client */
+  if(!isValidUrl(url)){
+    hint.textContent='Please enter a valid URL (e.g. https://example.com)';
+    hint.style.display='block';
+    input.focus();
+    return;
+  }
+  hint.style.display='none';
+  /* Aggiungi https:// se manca il protocollo */
+  if(!/^https?:\/\//i.test(url))url='https://'+url;
+  input.value=url;
+  $('btn').disabled=true;$('error').style.display='none';$('result').style.display='none';
+  startSpin();
+  try{
+    const res=await fetch('/api/audit?url='+encodeURIComponent(url));
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.detail||'Audit failed');
+    renderResult(data,url);
+  }catch(e){
+    $('error').textContent=e.message;$('error').style.display='block';
+  }finally{stopSpin();$('btn').disabled=false}
+}
+
+function renderResult(data,url){
+  const color=BANDS[data.band]||'#888';
+  const score=data.score||0;
+
+  /* Gauge */
+  const circ=314.16;
+  const offset=circ-(score/100*circ);
+  const fill=$('gauge-fill');
+  fill.style.stroke=color;
+  fill.style.strokeDashoffset=String(offset);
+  $('gauge-score').textContent=score;
+  $('gauge-score').style.fill=color;
+
+  const tag=$('band-tag');
+  tag.textContent=data.band?data.band.toUpperCase():'—';
+  tag.style.background=color+'1a';tag.style.color=color;
+
+  /* Breakdown */
+  const bd=$('breakdown');bd.textContent='';
+  const br=data.score_breakdown||{};
+  for(const cat of CATEGORIES){
+    const val=br[cat.key]||0;
+    const pct=Math.min(val/cat.max*100,100);
+    const row=document.createElement('div');row.className='bar-row';
+
+    const lbl=document.createElement('span');lbl.className='bar-label';lbl.textContent=cat.label;
+    const track=document.createElement('div');track.className='bar-track';
+    const barFill=document.createElement('div');barFill.className='bar-fill';
+    barFill.style.width='0%';barFill.style.background=color;
+    track.appendChild(barFill);
+    const valSpan=document.createElement('span');valSpan.className='bar-val';
+    valSpan.textContent=val+'/'+cat.max;
+
+    row.appendChild(lbl);row.appendChild(track);row.appendChild(valSpan);
+    bd.appendChild(row);
+    requestAnimationFrame(()=>{requestAnimationFrame(()=>{barFill.style.width=pct+'%'})});
+  }
+
+  /* Citability */
+  const cit=data.citability;
+  if(cit&&cit.total_score!==undefined){
+    $('cit-wrap').style.display='flex';
+    const cs=$('cit-score');cs.textContent=cit.total_score+'/100';
+    const cc=cit.total_score>=86?BANDS.excellent:cit.total_score>=68?BANDS.good:cit.total_score>=36?BANDS.foundation:BANDS.critical;
+    cs.style.color=cc;
+    $('cit-grade').textContent=cit.grade?cit.grade.toUpperCase():'';
+    $('cit-grade').style.color=cc;
+  }else{$('cit-wrap').style.display='none'}
+
+  /* Recommendations */
+  const recs=data.recommendations||[];
+  $('recs-count').textContent='('+recs.length+')';
+  const rl=$('recs-list');rl.textContent='';rl.classList.remove('open');
+  $('recs-toggle').classList.remove('open');
+  for(const r of recs){const li=document.createElement('li');li.textContent=r;rl.appendChild(li)}
+
+  /* Trend */
+  const history=data.history;
+  const trendBox=$('trend-box');
+  if(history && history.total_snapshots){
+    trendBox.style.display='block';
+    const scoreDelta=history.score_delta;
+    const latestBand=(history.latest_band||'critical').toUpperCase();
+    let summary=`Current baseline: ${history.latest_score}/100 (${latestBand}).`;
+    if(history.total_snapshots >= 2 && scoreDelta !== null && scoreDelta !== undefined){
+      if(scoreDelta > 0) summary=`Improved from ${history.previous_score} to ${history.latest_score} since the previous snapshot.`;
+      else if(scoreDelta < 0) summary=`Dropped from ${history.previous_score} to ${history.latest_score} since the previous snapshot.`;
+      else summary=`Stable at ${history.latest_score}/100 since the previous snapshot.`;
+    }
+    $('trend-summary').textContent=summary;
+    const deltaNode=$('trend-delta');
+    if(scoreDelta === null || scoreDelta === undefined){
+      deltaNode.textContent='BASE';
+      deltaNode.style.color='var(--text-dim)';
+    }else{
+      deltaNode.textContent=(scoreDelta > 0 ? '+' : '') + scoreDelta;
+      deltaNode.style.color=scoreDelta >= 0 ? BANDS.good : BANDS.critical;
+    }
+    const trendList=$('trend-list');trendList.textContent='';
+    (history.entries||[]).slice(0,5).forEach(item=>{
+      const row=document.createElement('div');row.className='trend-row';
+      const date=document.createElement('span');date.className='trend-date';date.textContent=(item.timestamp||'').slice(0,10);
+      const score=document.createElement('span');score.className='trend-score';
+      const delta=(item.delta === null || item.delta === undefined) ? '—' : ((item.delta > 0 ? '+' : '') + item.delta);
+      score.textContent=`${item.score}/100 · ${delta}`;
+      const bar=document.createElement('div');bar.className='trend-bar';
+      const fill=document.createElement('span');fill.className='trend-fill';
+      fill.style.width=Math.max(4, Math.min(100, item.score||0))+'%';
+      bar.appendChild(fill);
+      row.appendChild(date);row.appendChild(score);row.appendChild(bar);
+      trendList.appendChild(row);
+    });
+  }else{
+    trendBox.style.display='none';
+  }
+
+  /* Actions */
+  const acts=$('actions');acts.textContent='';
+  if(data.report_url){
+    const a=document.createElement('a');a.className='action-link';a.href=data.report_url;
+    a.target='_blank';a.rel='noopener';a.textContent='HTML Report';acts.appendChild(a);
+  }
+  const pdf=document.createElement('a');pdf.className='action-link';
+  pdf.href='/api/audit/pdf?url='+encodeURIComponent(url);
+  pdf.textContent='Download PDF';acts.appendChild(pdf);
+
+  $('result').style.display='block';
+}
+
+/* ─── Event listeners ─── */
+$('btn').addEventListener('click',runAudit);
+$('url-input').addEventListener('keypress',e=>{if(e.key==='Enter')runAudit()});
+$('recs-toggle').addEventListener('click',function(){
+  this.classList.toggle('open');$('recs-list').classList.toggle('open');
+});
+$('copy-btn').addEventListener('click',function(){
+  navigator.clipboard.writeText('pip install geo-optimizer-skill').then(()=>{this.textContent='Done!'});
+  setTimeout(()=>{this.textContent='\u{1F4CB}'},1500);
+});
+document.getElementById('nav-ham').addEventListener('click',function(){
+  document.querySelector('.nav-links').classList.toggle('open');
+  this.textContent=this.textContent==='☰'?'✕':'☰';
+});
+document.querySelectorAll('.nav-dropdown-toggle').forEach(function(btn){
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var dd=this.closest('.nav-dropdown');
+    dd.classList.toggle('open');
+    this.setAttribute('aria-expanded',dd.classList.contains('open'));
+  });
+});
+document.addEventListener('click',function(){
+  document.querySelectorAll('.nav-dropdown.open').forEach(function(dd){
+    dd.classList.remove('open');
+    dd.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded','false');
+  });
+});
+</script>
+
+<!-- Floating cookie settings button: apre il modal delle preferenze -->
+<button type="button" id="cookie-float-btn" class="cookie-float-btn" title="Cookie settings" aria-label="Cookie settings" style="display:none">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="8" cy="9" r="1.5" fill="currentColor"/>
+    <circle cx="15" cy="8" r="1" fill="currentColor"/>
+    <circle cx="14" cy="14" r="1.5" fill="currentColor"/>
+    <circle cx="9" cy="15" r="1" fill="currentColor"/>
+    <circle cx="17" cy="13" r="1" fill="currentColor"/>
+  </svg>
+</button>
+<script__NONCE_ATTR__>
+(function() {
+  var floatBtn = document.getElementById('cookie-float-btn');
+  var banner = document.getElementById('cookie-banner');
+
+  // Mostra il pulsante solo quando il banner non è visibile
+  function updateFloatBtnVisibility() {
+    if (!floatBtn) return;
+    var bannerVisible = banner && banner.style.display !== 'none' && !banner.hidden;
+    floatBtn.style.display = bannerVisible ? 'none' : 'flex';
+  }
+
+  // Controlla dopo breve delay (il banner usa display/hidden)
+  setTimeout(updateFloatBtnVisibility, 500);
+
+  // Osserva cambiamenti al banner
+  if (banner && window.MutationObserver) {
+    var obs = new MutationObserver(updateFloatBtnVisibility);
+    obs.observe(banner, { attributes: true, attributeFilter: ['style', 'hidden'] });
+  }
+
+  // Al click apre il modal cookie se disponibile
+  if (floatBtn) {
+    floatBtn.addEventListener('click', function() {
+      if (typeof window.openCookieModal === 'function') {
+        window.openCookieModal();
+      }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

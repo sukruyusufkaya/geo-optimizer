@@ -1,0 +1,309 @@
+---
+import Shell from '../components/Shell.astro';
+
+const title = 'Otterly Alternative: Pricing & Coverage | GeoReady';
+const description =
+  'Otterly alternative comparison: entry pricing, the $29-to-$189 jump, engine coverage, and where Otterly is genuinely stronger — sourced, dated Sep 2026.';
+const canonical = 'https://geoready.dev/otterly-alternative/';
+const datePublished = '2026-09-16';
+const dateModified = '2026-09-16';
+
+// Classe condivisa dei link nel corpo del testo (ricetta console).
+const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep';
+
+// Confronto tier-by-tier — packet 12-otterly-alternative.md,
+// §"Otterly vs GeoReady, tier by tier". Nessun punteggio inventato.
+const TIER_ROWS = [
+  ['— (7-day trial)', 'Free, no card', '4 base engines implied; exact trial scope not published', 'Free', '$0 forever', '5 audits/day, full 8-category report, no account, no card, no expiry'],
+  ['Lite', '$29/mo', '15 prompts, 1,000 audits/mo, 4 engines (ChatGPT, AI Overviews, Perplexity, Copilot)', 'Pro', '$19/mo', '1 domain weekly monitoring, 30-audit history, regression alerts, PDF export, API access'],
+  ['Standard', '$189/mo', '100 prompts, 5,000 audits/mo, Looker Studio, 2,000/2,000 API/MCP requests', 'Studio', '$49/mo', '15 domains daily, 12-month history, AI citation tracking — 5 automated Perplexity checks/day, competitor comparison'],
+  ['Premium', '$489/mo', '400 prompts, 10,000 audits/mo, 5,000/5,000 API/MCP requests', 'Agency', '$89/mo', '50 domains daily, 24-month history, team workspace, AI answer snapshots (Perplexity automated; ChatGPT/Google manual paste)'],
+  ['Enterprise', 'Custom, from $1,000/mo', 'Customizable prompt volume', 'Enterprise', 'Talk to us', 'Unlimited domains, SLA, on-premise, hourly monitoring*'],
+] as const;
+
+// FAQ condivise tra markup visibile e schema — nessuna FAQPage per pagine
+// nuove. Alcune risposte contengono link inline, quindi sono HTML string
+// renderizzate con set:html.
+const faqs = [
+  {
+    q: 'Does GeoReady track all the same AI engines as Otterly?',
+    a: "Not the same way. Otterly's base plans track ChatGPT, Google AI Overviews, Perplexity, and Microsoft Copilot automatically and daily, with Claude, Gemini, and AI Mode available as paid add-ons (otterly.ai/pricing, accessed 2026-09-01). GeoReady's automated citation tracking (Studio, $49/mo) covers 5 Perplexity checks a day, with ChatGPT and Google available via manual paste at Agency — narrower automated coverage today, stated honestly rather than rounded up.",
+  },
+  {
+    q: "Why does Otterly's price jump from $29 to $189?",
+    a: "Lite ($29/mo) includes 15 prompts and 1,000 audits/mo; Standard ($189/mo) includes 100 prompts, 5,000 audits/mo, and adds the Looker Studio connector plus an API/MCP request allotment (otterly.ai/pricing, accessed 2026-09-01). It's a real feature step, not just a price step — but it's still the largest single gap in either vendor's pricing ladder, so budget for it deliberately rather than assuming Lite scales gradually into Standard.",
+  },
+  {
+    q: "Is Otterly's free trial actually free?",
+    a: "Yes — 7 days, no credit card required (otterly.ai/pricing, accessed 2026-09-01). The exact feature scope during the trial (which engines, how many prompts) isn't published on the fetched pages, so treat it as narrower than the paid tiers until you've confirmed otherwise.",
+  },
+  {
+    q: 'Is GeoReady open source, like the combined alternative page discusses?',
+    a: `Yes — the CLI (geo-optimizer-skill) is MIT-licensed and self-hostable; Otterly's detection and scoring logic is proprietary and undisclosed on the pages checked. For the fuller open-source-vs-proprietary case across this whole category (not just Otterly), see the <a href="/open-source-profound-otterly-alternative/" class="${PROSE_LINK}">open-source Profound and Otterly alternative</a> page — this page stays focused on Otterly specifically: its pricing, its engine coverage, and its trial terms.`,
+  },
+  {
+    q: 'Does Otterly support agencies with multiple workspaces or SSO?',
+    a: "Otterly includes unlimited team members on every tier, and its pricing structure — workspaces, Enterprise-tier SSO — signals an agency and mid-market-to-enterprise orientation (otterly.ai/, accessed 2026-09-01). GeoReady's team workspace (owner/editor/viewer roles) starts at Agency, $89/mo; no SSO is stated anywhere on pricing.md.",
+  },
+  {
+    q: "Is there a cheaper way to just check whether I'm cited, without a monthly subscription?",
+    a: `On the GeoReady side, yes — the <a href="/tools/ai-citation-checker/" class="${PROSE_LINK}">AI citation checker</a> runs a free, no-account spot-check against Perplexity. Otterly doesn't publish a free, no-subscription single-check option; its only no-cost path is the 7-day trial.`,
+  },
+  {
+    q: 'Should an agency managing several clients choose Otterly instead of GeoReady?',
+    a: `For agencies whose main job is continuous, automated, multi-client citation tracking with API and Looker Studio reporting, yes — that's Otterly's strongest use case, and GeoReady doesn't match its tracking depth today. For agencies whose main job is auditing AI-readiness across many client sites and monitoring GEO-score regressions, GeoReady's Agency plan ($89/mo, 50 domains, team workspace) is the cheaper, narrower-scope fit. Different jobs, different tools — see <a href="/best-geo-tools/" class="${PROSE_LINK}">how GEO tools compare</a> for the full category breakdown.`,
+  },
+] as const;
+---
+
+<Shell title={title} description={description} canonical={canonical}>
+  <article class="mx-auto max-w-3xl bg-paper px-4 py-10 font-text text-ink sm:px-6 md:py-16 [&_h2]:font-head [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:leading-tight [&_h2]:tracking-[-0.02em] [&_h2]:text-ink [&_h3]:font-head [&_h3]:text-lg [&_h3]:font-extrabold [&_h3]:tracking-[-0.01em] [&_h3]:text-ink [&_p]:text-ink-soft [&_p]:leading-relaxed [&_li]:text-ink-soft [&_li]:leading-relaxed">
+
+    {/* Header — answer-first, byline direttamente sotto l'H1 come da packet */}
+    <header class="mb-12 md:mb-16">
+      <h1 class="font-head text-3xl font-extrabold leading-tight tracking-[-0.03em] text-ink md:text-4xl">
+        Otterly Alternative: What You Get Before and After the Price Jump
+      </h1>
+
+      <p class="mt-4 font-mono text-xs text-ink-mute">
+        Published September 16, 2026 · Last updated September 16, 2026 · by Juan Camilo Auriti · 9 min read
+      </p>
+
+      <p class="mt-4 text-base leading-relaxed text-ink-soft md:text-lg">
+        Otterly (otterly.ai) is a capable, purpose-built AI-search-visibility
+        platform: daily automated citation tracking, sentiment classification, a
+        public API and MCP server, Looker Studio reporting. It's also priced in a way
+        that rewards commitment — $29/mo to start, then a jump to $189/mo for a
+        workable prompt volume, with no permanent free plan. This page compares
+        Otterly and GeoReady on facts published by each vendor as of September 2026,
+        states plainly where Otterly is the stronger tool, and doesn't score either
+        one on anything that isn't sourced. If you're weighing open-source engines
+        against proprietary SaaS in this category generally — not Otterly
+        specifically — that's a different question, answered on the{' '}
+        <a href="/open-source-profound-otterly-alternative/" class={PROSE_LINK}>open-source Profound and Otterly alternative</a> page.
+      </p>
+    </header>
+
+    <section class="mb-12 md:mb-16">
+      <h2>What Otterly does today</h2>
+      <p class="mt-4">
+        Otterly's core product is AI Search Analytics: tracking brand and website
+        visibility and mentions across AI engines with competitive positioning
+        (otterly.ai, accessed 2026-09-01). Around that core sit several distinct
+        features: Citation & Brand Tracking checks "every domain and URL cited in AI
+        answers... daily, with link-position changes over time"; a Content Audit
+        scores crawlability and AI-readiness with optimization guidance; Brand
+        Sentiment Analysis classifies AI mentions as enthusiastic, caveated, or
+        dismissive; Competitive Benchmarking compares your brand's mentions against
+        named competitors automatically; a Query Fan-Out tool surfaces the related
+        and comparative questions AI models generate around a topic; and Agent
+        Analytics separately tracks AI-crawler traffic to your own domain
+        (otterly.ai/features and docs.otterly.ai/introduction, accessed 2026-09-01).
+        Otterly also monitors ChatGPT Ads & Shopping placements and Google AI
+        Overviews ad placements (otterly.ai/features, accessed 2026-09-01). Citation
+        tracking runs across 65+ countries and languages (otterly.ai/features,
+        accessed 2026-09-01) — global monitoring breadth built for multi-market
+        brands, not a single-region product. For teams building their own reporting,
+        there's a public REST API, an MCP server, and — from Standard up — a Looker
+        Studio connector (otterly.ai/pricing and docs.otterly.ai/introduction,
+        accessed 2026-09-01).
+      </p>
+      <p class="mt-4">
+        Otterly's own positioning points toward a specific buyer: marketing teams and
+        agencies, content strategists, SEO professionals, SaaS companies, and
+        enterprise brands (otterly.ai/, accessed 2026-09-01). Unlimited team members
+        on every tier and Enterprise-tier SSO signal a multi-client,
+        mid-market-to-enterprise orientation more than a solo-operator one
+        (otterly.ai/, accessed 2026-09-01) — worth knowing before comparing sticker
+        prices, because the two products aren't necessarily being bought by the same
+        kind of team.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <h2>Where the price jumps</h2>
+      <p class="mt-4">Otterly's published pricing (otterly.ai/pricing, accessed 2026-09-01, as of September 2026):</p>
+      <ul class="ml-5 mt-4 list-disc space-y-2">
+        <li><strong class="text-ink">Lite — $29/mo:</strong> 15 search prompts, 1,000 GEO URL audits/mo, no API/MCP allotment.</li>
+        <li><strong class="text-ink">Standard — $189/mo, "Most Popular":</strong> 100 prompts, 5,000 audits/mo, 2,000 API and 2,000 MCP requests/mo, Looker Studio connector.</li>
+        <li><strong class="text-ink">Premium — $489/mo:</strong> 400 prompts, 10,000 audits/mo, 5,000/5,000 API/MCP requests.</li>
+        <li><strong class="text-ink">Enterprise — custom, "starting from $1,000/month":</strong> customizable prompt volume.</li>
+      </ul>
+      <p class="mt-4">
+        These are two different quotas, not one: "search prompts" are the AI-engine
+        queries Otterly runs on your behalf, while "GEO URL audits" are separate
+        on-page crawlability and AI-readiness checks bundled into the same plan
+        (otterly.ai/pricing, accessed 2026-09-01) — worth distinguishing before
+        assuming a plan's headline prompt count is the whole allowance. Every tier
+        includes unlimited team seats, and extra prompts cost $99 for +100/month if 15
+        isn't enough (otterly.ai/pricing, accessed 2026-09-01). There's no permanent
+        free plan — only a 7-day trial, no credit card required, with the exact trial
+        feature scope not published on the fetched pages. Annual billing takes roughly
+        14–15% off the monthly rate at every tier.
+      </p>
+      <p class="mt-4">
+        The gap that matters most for evaluation is the one between the entry price
+        and the price that gets you a workable prompt volume: Lite's $29/mo buys 15
+        prompts; Standard's $189/mo buys 100. That single step — from $29 to $189 —
+        is the largest jump in either vendor's pricing ladder, and it's worth
+        budgeting for before you commit to Lite expecting to stay there.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <h2>The engines-included-vs-advertised nuance</h2>
+      <p class="mt-4">
+        Otterly's homepage markets coverage across "ChatGPT, Perplexity, AI
+        Overviews, AI Mode, Gemini, and Copilot" plus Claude — seven named engines
+        (otterly.ai/, accessed 2026-09-01). What's included by default in every paid
+        tier's price is narrower: ChatGPT, Google AI Overviews, Perplexity, and
+        Microsoft Copilot — four engines (otterly.ai/pricing, accessed 2026-09-01).
+        Claude, Google AI Mode, and Gemini are separate paid add-ons layered on top of
+        any base plan, priced "$9–$439/month depending on plan tier"
+        (otterly.ai/pricing, accessed 2026-09-01). This isn't hidden — both figures
+        sit on Otterly's own pricing page — but it's worth stating plainly: the
+        $29/mo sticker price covers 4 of the 7 engines the homepage advertises, not
+        all 7. Budget for add-ons if Claude or Gemini visibility matters to your
+        evaluation.
+      </p>
+      <p class="mt-4">
+        GeoReady has its own version of this honesty test, and it's worth naming
+        rather than dodging: the Free audit's 8-category score isn't AI-engine
+        citation tracking at all — it's a readiness score, a different question.
+        GeoReady's actual citation tracking (Studio, $49/mo) is scoped to 5 automated
+        Perplexity checks per day, with ChatGPT and Google covered through manual
+        paste at Agency ($89/mo) rather than automated (pricing.md, checked
+        2026-08-31). GeoReady doesn't market broader automated engine coverage than
+        that.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <h2>Where GeoReady starts cheaper</h2>
+      <p class="mt-4">
+        A full GEO audit — no account, no card, 5 runs a day — costs $0 forever on
+        GeoReady; Otterly has no equivalent permanent free tier, only the 7-day
+        trial. Moving to a paid plan, GeoReady Pro is $19/mo against Otterly Lite's
+        $29/mo. These aren't the same product at that price point — Pro is domain
+        monitoring with score history and regression alerts, not prompt-based
+        citation tracking — but for a buyer deciding whether to spend anything at all
+        before understanding the category, GeoReady's free and $19 entry points carry
+        materially less commitment than Otterly's trial-then-$29 path.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <h2>Where Otterly is genuinely stronger — and who should keep it</h2>
+      <p class="mt-4">
+        Say this plainly, because it's true and the anti-hype case is the trust case:
+        if what you need is continuous, automated, daily citation and brand-mention
+        tracking at scale — across a real prompt volume, with sentiment
+        classification, a REST API, an MCP server, and a Looker Studio pipeline into
+        your own reporting — Otterly's core product is more mature at that specific
+        job than anything GeoReady offers today. GeoReady's citation checking is a
+        spot-check tool and a Perplexity-scoped automated tier, not a continuous,
+        multi-engine share-of-voice tracker. Enterprise brands, agencies managing
+        several clients' AI visibility, and teams that already have a reporting
+        pipeline to plug an API into should weigh Otterly seriously on that basis —
+        this isn't a hedge, it's the honest answer for that use case. The 65+ country
+        and language breadth matters here too: a multi-market enterprise brand
+        evaluating global share-of-voice tracking is evaluating a scale GeoReady's
+        Perplexity-scoped automated tier doesn't claim to match.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <h2>Otterly vs GeoReady, tier by tier</h2>
+      <p class="mt-4 text-sm italic text-ink-mute">
+        Otterly figures: otterly.ai/pricing, accessed 2026-09-01. GeoReady figures:
+        pricing.md, live 2026-08-31. Figures are stated as published by each vendor;
+        no scores or ratings are assigned to either.
+      </p>
+      <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-paper">
+            <tr class="border-b border-rail">
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Otterly tier</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Price</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">What it includes</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">GeoReady tier</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Price</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">What it includes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rail">
+            {TIER_ROWS.map(([otterlyTier, otterlyPrice, otterlyIncludes, georeadyTier, georeadyPrice, georeadyIncludes]) => (
+              <tr class="align-top">
+                <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-text font-semibold text-ink">{otterlyTier}</th>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{otterlyPrice}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{otterlyIncludes}</td>
+                <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-text font-semibold text-ink">{georeadyTier}</th>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{georeadyPrice}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{georeadyIncludes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-4 text-sm italic text-ink-mute">
+        Hourly cadence is stated on GeoReady's Enterprise card in pricing.md; its tier
+        attribution is under internal review.
+      </p>
+      <p class="mt-4">
+        Add-on engines (Claude, Google AI Mode, Gemini) are not included in any
+        Otterly row above — they're priced separately on top, per the
+        engines-nuance section.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <h2>Frequently asked questions</h2>
+      <div class="mt-6 space-y-6">
+        {faqs.map((faq) => (
+          <div>
+            <h3>{faq.q}</h3>
+            <p class="mt-2" set:html={faq.a} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Start with a free audit</h2>
+      <p class="mt-4">
+        No account, no card, no trial clock. Run the{' '}
+        <a href="/ai-seo-audit/" class={PROSE_LINK}>free GEO audit</a> on any URL
+        first, then check{' '}
+        <a href="/pricing/" class={PROSE_LINK}>full plan pricing</a> once you know
+        whether you need audit-and-monitor or continuous multi-engine tracking. If
+        citation tracking specifically is what you're evaluating, GeoReady's own{' '}
+        <a href="/tools/ai-citation-checker/" class={PROSE_LINK}>AI citation checker</a>
+        {' '}is a free, no-account way to see a first result before comparing further.
+      </p>
+    </section>
+  </article>
+
+  {/* Page-specific schema — WebPage (packet's recommended type, not Article) */}
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": title,
+    "description": description,
+    "url": canonical,
+    "isPartOf": { "@id": "https://geoready.dev/#website" },
+    "datePublished": datePublished,
+    "dateModified": dateModified,
+    "author": { "@id": "https://geoready.dev/#founder" },
+    "publisher": { "@id": "https://geoready.dev/#organization" }
+  })} />
+
+  {/* BreadcrumbList — coerente con le altre pagine */}
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "GeoReady", "item": "https://geoready.dev/" },
+      { "@type": "ListItem", "position": 2, "name": "Otterly Alternative", "item": canonical }
+    ]
+  })} />
+</Shell>

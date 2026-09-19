@@ -1,0 +1,584 @@
+---
+import Shell from '../components/Shell.astro';
+import AuditForm from '../components/AuditForm';
+import StatsBar from '../components/StatsBar';
+import { getBenchmark } from '../utils/benchmark';
+import { getPublicStats } from '../utils/publicStats';
+
+// Gli otto pesi di scoring, come pubblicati in models/config.py (SCORING).
+// Sono qui perché la pagina rivendica "auditable scoring": affermarlo e non mostrarlo
+// è la stessa opacità che il prodotto critica. Tenere allineato ai pesi reali.
+// La quarta colonna è la chiave di categoria dello score_breakdown JSON: è l'ID
+// che il rail dei gate mostra come annotazione, quindi deve restare quella vera.
+const SCORING_WEIGHTS = [
+  ['Robots.txt', 18, 'Whether citation crawlers are allowed to fetch the site at all.', 'robots'],
+  ['llms.txt', 18, 'Presence and depth of the root-level orientation file, including llms-full.txt.', 'llms'],
+  ['Schema JSON-LD', 16, 'Valid structured data: Organization, WebSite, Article, FAQ.', 'schema'],
+  ['Meta tags', 14, 'Title, description, canonical, and Open Graph completeness.', 'meta'],
+  ['Content', 12, 'Heading hierarchy, word count, lists, front-loaded answers.', 'content'],
+  ['Signals', 6, 'Declared language, feed availability, freshness date.', 'signals'],
+  ['AI discovery', 6, 'The .well-known/ai.txt and /ai/*.json endpoints.', 'ai_discovery'],
+  ['Brand & entity', 10, 'Naming coherence, Knowledge Graph readiness, topic authority.', 'brand_entity'],
+] as const;
+
+// Aggregati della coorte, letti a build time da GET /api/public/benchmark: erano
+// hardcoded perché la build Docker gira prima che l'app locale sia in piedi, ma
+// l'endpoint è pubblico e la build lo raggiunge come già fa con Sanity. I valori scritti
+// a mano restavano indietro senza che nessuno se ne accorgesse — «750+ siti, media 54.3»
+// contro i 900+ e 54.6 reali. Se l'endpoint non risponde si usano i valori di fallback:
+// vedi utils/benchmark.ts.
+const BENCHMARK = await getBenchmark();
+
+// Stessa ragione: i contatori di StatsBar arrivavano solo via JS, quindi l'HTML statico
+// mostrava a un crawler il fallback fermo a luglio (587 stelle, 5.134 download).
+const { stats: PUBLIC_STATS, isLive: STATS_ARE_LIVE } = await getPublicStats();
+
+const projectChecks = [
+  {
+    title: 'Open source (MIT)',
+    desc: 'Full methodology, scoring weights, and source code on GitHub. No proprietary scoring.',
+    source: 'github.com/Auriti-Labs/geo-optimizer-skill',
+    link: { label: 'View on GitHub', href: 'https://github.com/Auriti-Labs/geo-optimizer-skill' },
+  },
+  {
+    title: 'Research-backed',
+    desc: 'Scoring grounded in Princeton KDD 2024 and AutoGEO ICLR 2026 research on AI search retrieval.',
+    source: 'arXiv 2311.09735 · 2510.11438',
+    link: { label: 'Read the research', href: '/research/' },
+  },
+  {
+    title: 'Auditable scoring',
+    desc: 'Every signal is traceable to a published rule. Score breakdowns show per-category contributions.',
+    source: 'models/config.py · SCORING',
+    link: null,
+  },
+  {
+    title: 'Machine-readable output',
+    desc: 'JSON format designed for CI/CD pipelines, integrations, and the GeoReady platform API.',
+    source: 'geo audit --format json',
+    link: null,
+  },
+  {
+    title: 'Documented in print',
+    desc: 'The methodology behind this tool is written up in full in AI Search Engineering — 992 pages on GEO, AI citations, and agent-ready websites.',
+    source: 'ISBN 979-8172934568',
+    link: { label: 'About the book', href: '/book/' },
+  },
+];
+
+const actions = [
+  {
+    label: 'Run a free check',
+    desc: 'Enter any public URL above — no account required.',
+    href: '#audit-form',
+    badge: 'Available now',
+    badgeTone: 'pass',
+  },
+  {
+    label: 'Use the open-source CLI',
+    desc: 'pip install geo-optimizer-skill — scoring, access simulation, crawler log analysis. MIT licensed.',
+    href: 'https://github.com/Auriti-Labs/geo-optimizer-skill',
+    badge: 'Free forever',
+    badgeTone: 'pass',
+  },
+  {
+    label: 'Read the research',
+    desc: 'Princeton KDD 2024 and AutoGEO ICLR 2026 behind the scoring methodology.',
+    href: '/research/',
+    badge: 'Documentation',
+    badgeTone: 'neutral',
+  },
+  {
+    label: 'View plans',
+    desc: 'Pro monitoring, history, and alerts. Founding price, locked for life.',
+    href: '/pricing/',
+    badge: 'Live now',
+    badgeTone: 'pass',
+  },
+];
+
+const faqs = [
+  {
+    q: 'What is Generative Engine Optimization?',
+    a: 'GEO is the practice of making websites discoverable, readable, and citable by AI search engines such as ChatGPT, Perplexity, Claude, and Gemini. It focuses on structured data, content hierarchy, and technical signals that AI crawlers prioritize.',
+  },
+  {
+    q: 'What does GeoReady check?',
+    a: 'GeoReady audits 8 categories: robots.txt, llms.txt, JSON-LD schema, meta tags, content quality, technical signals, AI discovery paths, and brand entity signals. It also detects prompt injection patterns and negative signals through the same open-source GEO Optimizer engine. The CLI additionally offers Agent Access Audit (bot vs browser access simulation via `geo access`) and AI Crawler Activity Analytics (server log parsing via `geo logs`).',
+  },
+  {
+    q: 'How is GEO different from traditional SEO?',
+    a: 'Traditional SEO optimizes for keyword rankings and backlinks in conventional search engines. GEO optimizes for AI citation signals: structured data, clear content architecture, AI crawler permissions, and self-contained answer blocks. The two complement rather than replace each other.',
+  },
+  {
+    q: 'Is the Pro plan available now?',
+    a: 'Yes. Pick a plan and your account activates immediately. No sales call, no waitlist.',
+  },
+  {
+    q: 'Is GeoReady open source?',
+    a: 'The core GEO Optimizer engine is MIT licensed. Source code, scoring weights, and methodology are publicly available on GitHub. The CLI and the free web audit remain free; GeoReady Pro adds monitoring, history, alerts, exports, and team workflows.',
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(f => ({
+    "@type": "Question",
+    "name": f.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": f.a
+    }
+  }))
+};
+
+// Percentuali per le barre del pannello di run: dati reali del benchmark.
+const avgPct = Math.max(0, Math.min(100, Number(BENCHMARK.average) || 0));
+const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+<Shell
+  title="Free AI SEO Audit for ChatGPT & Perplexity — GeoReady"
+  description="Free AI SEO and GEO audit. Find crawler, llms.txt, schema, content, and citation gaps that stop ChatGPT, Perplexity, Claude, and Gemini from citing your site."
+  canonical="https://geoready.dev/"
+>
+  {/* Hero — the trigger console and the eight-gate rail */}
+  <section id="audit-form" data-hero-bleed class="world-console bg-paper font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 pt-14 pb-16 md:pt-20 md:pb-20">
+      <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)] lg:items-start">
+        <div>
+          <h1 class="font-head text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] md:text-6xl">
+            Find the gaps that keep your site out of AI&nbsp;answers.
+          </h1>
+          <p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
+            Buyers ask ChatGPT, Perplexity, Claude, and Gemini before they click a search result.
+            GeoReady checks whether your URL can be reached, understood, and cited by those answer engines,
+            then gives you a 0–100 score and prioritized fixes across 8 signal categories.
+          </p>
+
+          <div class="mt-9">
+            <AuditForm client:load variant="console" />
+          </div>
+          <p class="mt-2.5 flex flex-wrap items-center gap-x-3 text-[13px] text-ink-mute">
+            <span>Free report, no account required.</span>
+            <span class="font-mono text-[11px] uppercase tracking-[0.12em]">POST /api/audit</span>
+          </p>
+
+          <StatsBar client:load variant="console" initial={PUBLIC_STATS} initialIsLive={STATS_ARE_LIVE} />
+
+          <div class="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <a href="/report/demo/" data-cta="home_hero_demo_report" class="font-medium text-ink underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">View demo report</a>
+            <a href="/geo-readiness-manual/" data-cta="home_hero_manual" class="font-medium text-ink underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">Read the GEO manual</a>
+            <a href="/pricing/" data-cta="home_hero_pro_monitoring" class="font-medium text-ink underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">Pro monitoring</a>
+          </div>
+        </div>
+
+        {/* Run panel — your run against the measured cohort (nested grades) */}
+        <aside class="rounded-[4px] border border-rail bg-white" aria-label="Benchmark of audited sites">
+          <div class="flex items-center justify-between gap-3 border-b border-rail px-5 py-3">
+            <h2 class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-mute">Run panel</h2>
+            <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">{BENCHMARK.sampleLabel}</span>
+          </div>
+          <div class="space-y-4 px-5 py-5">
+            <div>
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="text-sm font-semibold text-ink">Your site</span>
+                <span class="font-mono text-[12px] tabular-nums text-queued">— /100 · queued</span>
+              </div>
+              <div class="mt-1.5 h-2.5 rounded-[2px] border border-ink/40 bg-paper" aria-hidden="true"></div>
+            </div>
+            <div>
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="text-sm text-ink-soft">Cohort average</span>
+                <span class="font-mono text-[12px] tabular-nums text-ink-soft">{BENCHMARK.average} /100</span>
+              </div>
+              <div class="mt-1.5 h-2.5 rounded-[2px] border border-dashed border-ink-mute/60" aria-hidden="true">
+                <div class="h-full bg-ink-mute/25" style={`width:${avgPct}%`}></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="text-sm text-ink-soft">Cohort median</span>
+                <span class="font-mono text-[12px] tabular-nums text-ink-soft">{BENCHMARK.median} /100</span>
+              </div>
+              <div class="mt-1.5 h-2.5 rounded-[2px] border border-dashed border-ink-mute/60" aria-hidden="true">
+                <div class="h-full bg-ink-mute/25" style={`width:${medPct}%`}></div>
+              </div>
+            </div>
+            <p class="text-[13px] leading-relaxed text-ink-mute">
+              Only {BENCHMARK.llmsTxtAdoption} of audited sites publish an llms.txt file.
+            </p>
+          </div>
+          <div class="border-t border-rail px-5 py-3">
+            <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">
+              GET /api/public/benchmark · as of {BENCHMARK.asOf} · <a href="/state-of-geo/" class="underline underline-offset-2 hover:text-ink">live benchmark</a>
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      {/* The eight gates, with their published weights */}
+      <div class="mt-14">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="font-head text-xl font-extrabold tracking-[-0.02em]">The eight gates every audit runs</h2>
+          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · SCORING · Σ = 100 pts</p>
+        </div>
+        <ol class="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2 lg:grid-cols-4">
+          {SCORING_WEIGHTS.map(([name, points, what, key], i) => (
+            <li class="gate bg-white" style={`--i:${i}`}>
+              <details class="group">
+                <summary class="flex cursor-pointer list-none items-start gap-3 px-4 py-4 transition-colors hover:bg-pass-wash/50 [&::-webkit-details-marker]:hidden">
+                  <span class="font-mono text-[12px] font-medium tabular-nums text-ink-mute">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-baseline justify-between gap-2">
+                      <span class="text-[15px] font-semibold text-ink">{name}</span>
+                      <span class="font-mono text-[12px] tabular-nums text-pass-deep">{points} pts</span>
+                    </span>
+                    <span class="mt-0.5 flex items-center justify-between gap-2">
+                      <span class="font-mono text-[11px] text-ink-mute">{key}</span>
+                      <span class="flex items-center gap-2">
+                        <span class="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-queued">
+                          <svg class="h-2 w-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="4" cy="4" r="3" /></svg>
+                          queued
+                        </span>
+                        <svg class="h-3 w-3 shrink-0 text-ink-mute transition-transform group-open:rotate-90" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M4.5 2.5 8 6l-3.5 3.5" />
+                        </svg>
+                      </span>
+                    </span>
+                  </span>
+                </summary>
+                <p class="border-t border-rail px-4 py-3 text-[13px] leading-relaxed text-ink-soft">{what}</p>
+              </details>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  {/* The retrieval path */}
+  <section class="world-console border-t border-rail bg-white font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <h2 class="max-w-3xl font-head text-3xl font-extrabold tracking-[-0.02em] md:text-5xl">AI SEO is not a checklist. It is a retrieval path.</h2>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-ink-soft">
+        Traditional SEO asks whether a page can rank. AI SEO asks whether an answer engine can reach it, parse it, trust it, and cite it.
+      </p>
+
+      <ol class="mt-10 grid gap-8 md:grid-cols-3 md:gap-6">
+        {[
+          ['01', 'Access', 'Crawler permissions, HTTP behavior, and server-rendered content decide whether AI systems can reach the page.'],
+          ['02', 'Meaning', 'llms.txt, schema, headings, and entity consistency help the model understand what the page is about.'],
+          ['03', 'Citation', 'Self-contained answers and factual density make the page easier to quote inside generated responses.'],
+        ].map(([num, title, text]) => (
+          <li class="relative border-t-2 border-pass pt-4">
+            <span class="absolute -top-[5px] left-0 h-2 w-2 rounded-full bg-pass" aria-hidden="true"></span>
+            <h3 class="font-head text-lg font-extrabold tracking-[-0.01em]">
+              <span class="mr-2 font-mono text-[12px] font-medium tabular-nums text-ink-mute align-middle">{num}</span>{title}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{text}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div class="mt-9 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <a href="/research/" class="font-medium text-ink underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">Read the research</a>
+        <a href="/guides/" class="font-medium text-ink underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">AI visibility guides</a>
+        <a href="/report/demo/" class="font-medium text-ink underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">View a demo report</a>
+      </div>
+    </div>
+  </section>
+
+  {/* The spec sheet */}
+  <section class="world-console border-t border-rail bg-paper font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">How GeoReady works</h2>
+      <div class="mt-8 space-y-8">
+        <div class="max-w-3xl">
+          <h3 class="font-head text-lg font-extrabold tracking-[-0.01em]">
+            <span class="mr-2 font-mono text-[12px] font-medium tabular-nums text-ink-mute align-middle">1</span>Enter a URL
+          </h3>
+          <p class="mt-2 leading-relaxed text-ink-soft">
+            Submit any public website address. The tool resolves and validates the URL,
+            then fetches the page source for analysis.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-head text-lg font-extrabold tracking-[-0.01em]">
+            <span class="mr-2 font-mono text-[12px] font-medium tabular-nums text-ink-mute align-middle">2</span>Get a GEO score
+          </h3>
+          <p class="mt-2 max-w-3xl leading-relaxed text-ink-soft">
+            The scan evaluates eight signal categories and returns a 0–100 score with a
+            per-category breakdown. These are the published weights — the same numbers the
+            open-source engine uses, so any score can be recomputed by hand:
+          </p>
+          <div class="mt-4 overflow-x-auto rounded-[4px] border border-rail bg-white">
+            <table class="w-full min-w-[640px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-rail">
+                  <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Gate</th>
+                  <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Category</th>
+                  <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Points</th>
+                  <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">What it measures</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SCORING_WEIGHTS.map(([name, points, what, key], i) => (
+                  <tr class="border-b border-rail/60 align-top last:border-0">
+                    <td class="px-4 py-3 font-mono text-[12px] tabular-nums text-ink-mute">{String(i + 1).padStart(2, '0')}</td>
+                    <th scope="row" class="whitespace-nowrap px-4 py-3 font-text font-semibold text-ink">
+                      {name}
+                      <span class="block font-mono text-[11px] font-normal text-ink-mute">{key}</span>
+                    </th>
+                    <td class="px-4 py-3 font-mono tabular-nums text-pass-deep">{points}</td>
+                    <td class="px-4 py-3 leading-relaxed text-ink-soft">{what}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-3 font-mono text-[12px] tabular-nums text-ink-mute">
+            Bands: 86–100 excellent · 68–85 good · 36–67 foundation · 0–35 critical.
+          </p>
+        </div>
+        <div class="max-w-3xl">
+          <h3 class="font-head text-lg font-extrabold tracking-[-0.01em]">
+            <span class="mr-2 font-mono text-[12px] font-medium tabular-nums text-ink-mute align-middle">3</span>Apply prioritized fixes
+          </h3>
+          <p class="mt-2 leading-relaxed text-ink-soft">
+            Each finding is ranked by impact and assigned a severity level. The report includes
+            actionable recommendations with specific file changes and schema additions.
+          </p>
+        </div>
+      </div>
+
+      {/* First-party baseline — a self-contained, quotable passage. Our own
+          measurement is the one claim on this page no competitor can restate.
+          Reso come "log well": l'unico materiale scuro della pagina. */}
+      <div class="mt-12 overflow-hidden rounded-[4px] bg-well text-well-ink">
+        <div class="flex items-center justify-between gap-3 border-b border-well-ink/15 px-6 py-3">
+          <h3 class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-well-mute">Run summary · what a typical site scores</h3>
+          <span class="font-mono text-[11px] tracking-[0.08em] text-pass">exit 0</span>
+        </div>
+        <figure class="px-6 py-6 md:px-8">
+          <blockquote>
+            <p class="max-w-3xl leading-relaxed">
+              We measured the sites scored through GeoReady, and our data shows the average
+              scores <strong class="font-semibold text-white">{BENCHMARK.average} out of 100</strong>,
+              with a median of {BENCHMARK.median}. Only {BENCHMARK.llmsTxtAdoption} publish an
+              llms.txt file. A score in the fifties is therefore ordinary rather than alarming:
+              most sites leave a large share of their AI-visibility points unclaimed, and the
+              gaps sit in signals a tool can find mechanically.
+            </p>
+          </blockquote>
+          <figcaption class="mt-4 font-mono text-[12px] leading-relaxed text-well-mute">
+            GeoReady benchmark, {BENCHMARK.sampleLabel}, as of {BENCHMARK.asOf}.
+            Latest audit per domain, aggregates only — the sample is self-selected, so read it
+            as a baseline among sites that chose to measure.
+            <a href="/state-of-geo/" class="underline underline-offset-2 hover:text-well-ink">See the live benchmark</a>.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  {/* Checks on the project itself */}
+  <section class="world-console border-t border-rail bg-white font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Why trust this tool</h2>
+      <ul class="mt-8 grid gap-x-10 gap-y-0 md:grid-cols-2">
+        {projectChecks.map((c) => (
+          <li class="flex items-start gap-4 border-t border-rail py-5">
+            <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pass-wash" aria-hidden="true">
+              <svg class="h-3 w-3 text-pass-deep" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 6.5 5 9l4.5-6" />
+              </svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+                <h3 class="text-[15px] font-semibold text-ink">{c.title}</h3>
+                <span class="font-mono text-[11px] text-ink-mute">{c.source}</span>
+              </div>
+              <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">{c.desc}</p>
+              {c.link && (
+                <a
+                  href={c.link.href}
+                  target={c.link.href.startsWith('http') ? '_blank' : undefined}
+                  rel={c.link.href.startsWith('http') ? 'noopener' : undefined}
+                  class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep"
+                >
+                  {c.link.label}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </a>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* What you can do today */}
+  <section class="world-console border-t border-rail bg-paper font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 py-16">
+      <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">What you can do today</h2>
+      <div class="mt-8 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2">
+        {actions.map((a) => (
+          <a
+            href={a.href}
+            target={a.href.startsWith('http') ? '_blank' : undefined}
+            rel={a.href.startsWith('http') ? 'noopener' : undefined}
+            class="group flex items-start gap-4 bg-white p-5 transition-colors hover:bg-pass-wash/50"
+          >
+            <div class="min-w-0 flex-1">
+              <div class="mb-1 flex flex-wrap items-center gap-2">
+                <p class="text-[15px] font-semibold text-ink transition-colors group-hover:text-pass-deep">{a.label}</p>
+                <span class={`rounded-[2px] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${a.badgeTone === 'pass' ? 'bg-pass-wash text-pass-deep' : 'border border-rail text-ink-mute'}`}>{a.badge}</span>
+              </div>
+              <p class="text-sm leading-relaxed text-ink-soft">{a.desc}</p>
+            </div>
+            <svg class="mt-1 h-4 w-4 shrink-0 text-ink-mute transition-colors group-hover:text-pass-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* From one run to scheduled runs */}
+  <section class="world-console border-t border-rail bg-white font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.8fr)] lg:items-start">
+        <div>
+          <h2 class="max-w-2xl font-head text-3xl font-extrabold tracking-[-0.02em] md:text-4xl">
+            One audit gives the baseline. Monitoring tells you when the baseline moves.
+          </h2>
+          <p class="mt-5 max-w-2xl leading-relaxed text-ink-soft">
+            The free audit is a point-in-time diagnosis. GeoReady Pro turns the same scoring engine into an ongoing signal for teams and client work.
+          </p>
+        </div>
+
+        <div class="grid gap-3">
+          <div class="rounded-[4px] border border-rail bg-paper p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-base font-semibold text-ink">Free audit</h3>
+              <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">run: once</span>
+            </div>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+              GEO score, top recommendations, and a fast read on whether a URL is crawlable and understandable.
+            </p>
+          </div>
+          <div class="rounded-[4px] border border-pass/50 bg-pass-wash/60 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-base font-semibold text-ink">GeoReady Pro</h3>
+              <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-pass-deep">schedule: weekly</span>
+            </div>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+              Weekly monitoring, report history, regression alerts, PDF export, and API access.
+            </p>
+            <a
+              href="https://app.geoready.dev/signup?plan=pro"
+              data-plan-id="pro"
+              data-plan-name="Pro"
+              data-plan-price="$19"
+              data-plan-period="/month"
+              data-plan-currency="USD"
+              data-cta-location="home_monitoring_section"
+              class="mt-4 inline-block text-sm font-semibold text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep"
+            >
+              Start with Pro
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* FAQ */}
+  <section class="world-console border-t border-rail bg-paper font-text text-ink">
+    <div class="mx-auto max-w-7xl px-6 py-16">
+      <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">Frequently asked questions</h2>
+      <div class="mt-8 max-w-3xl">
+        {faqs.map((faq) => (
+          <div class="border-t border-rail py-5 first:border-t-0 first:pt-0">
+            <h3 class="text-base font-semibold text-ink">{faq.q}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{faq.a}</p>
+          </div>
+        ))}
+        <div class="border-t border-rail py-5">
+          <h3 class="text-base font-semibold text-ink">Does the audit store submitted URLs?</h3>
+          <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+            URLs are processed in real time. No persistent storage of submitted URLs is declared unless
+            explicitly configured in the backend. See the <a href="/privacy/" class="text-pass-deep underline decoration-pass/40 underline-offset-2 hover:decoration-pass-deep">Privacy Policy</a> for details.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Verdict band */}
+  <section class="world-console bg-pass-deep font-text text-white">
+    <div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+        <h2 class="max-w-3xl font-head text-3xl font-extrabold tracking-[-0.02em] md:text-5xl">
+          AI search is already deciding which sites get cited.
+        </h2>
+        <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-pass-wash/80">Verdict · your site: not yet run</p>
+      </div>
+      <p class="mt-5 max-w-2xl leading-relaxed text-pass-wash">
+        The signals are documented, the research is published, and the tool is free.
+        GeoReady exists to make AI visibility auditable and accessible to every developer.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href="#audit-form"
+          class="inline-block rounded-[4px] bg-white px-7 py-3 font-mono text-[13px] font-semibold uppercase tracking-[0.12em] text-pass-deep transition-colors hover:bg-pass-wash"
+        >
+          Start free check
+        </a>
+        <a
+          href="/pricing/"
+          data-cta="home_final_pick_plan"
+          class="inline-block rounded-[4px] border border-white/40 px-7 py-3 font-mono text-[13px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:border-white hover:bg-white/10"
+        >
+          Start free or pick a plan
+        </a>
+      </div>
+    </div>
+  </section>
+</Shell>
+
+<style is:global>
+  /* Console world — browser surfaces themed from the palette (selection, caret,
+     focus) and the one authored motion: the run-wave across the gate rail. */
+  .world-console ::selection {
+    background-color: rgba(14, 131, 69, 0.18);
+    color: var(--color-ink);
+  }
+  .world-console :focus-visible {
+    outline: 2px solid var(--color-pass-deep);
+    outline-offset: 2px;
+  }
+  .world-console input {
+    caret-color: var(--color-pass-deep);
+  }
+
+  @keyframes run-wave {
+    0% { box-shadow: inset 0 0 0 0 rgba(14, 131, 69, 0); }
+    35% { box-shadow: inset 0 -2px 0 0 var(--color-pass); background-color: var(--color-pass-wash); }
+    100% { box-shadow: inset 0 0 0 0 rgba(14, 131, 69, 0); background-color: #fff; }
+  }
+  .world-console .gate {
+    animation: run-wave 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i) * 110ms + 350ms);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .world-console .gate { animation: none; }
+  }
+</style>

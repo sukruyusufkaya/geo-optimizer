@@ -1,0 +1,128 @@
+---
+import Shell from '../components/Shell.astro';
+import ResearchCard from '../components/content/ResearchCard.astro';
+import ResearchSurface from '../components/product/ResearchSurface.astro';
+import { researchSources, researchClosing } from '../lib/researchContent';
+---
+
+<Shell title="GEO Research — Papers Behind AI Search Visibility" description="The research behind AI visibility scoring: the Princeton GEO paper, the 2026 GEO survey, engine audits, and benchmarks like C-SEO Bench and E-GEO." canonical="https://geoready.dev/research/">
+  {/* Hero — paper band, annotation on the heading's baseline row */}
+  <section class="bg-paper">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
+      <header class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] lg:items-center">
+        <div>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <h1 class="max-w-3xl font-head text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink md:text-5xl">
+              The research foundation behind AI visibility scoring.
+            </h1>
+            <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">GEO Optimizer · Research</p>
+          </div>
+
+          <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink-soft md:text-lg">
+            Built on peer-reviewed science, not marketing claims. Every signal maps to peer-reviewed research or our own documented analysis.
+          </p>
+          <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">Last updated: September 2026</p>
+
+          <div class="mt-8 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-3">
+            {[
+              ['Papers', 'Research patterns that shape the scoring model.'],
+              ['Benchmarks', 'Evidence from retrieval and answer behavior.'],
+              ['Rules', 'Auditable checks that map evidence to action.'],
+            ].map(([label, text]) => (
+              <div class="bg-white p-5">
+                <p class="text-sm font-semibold text-ink">{label}</p>
+                <p class="mt-1 text-sm leading-relaxed text-ink-soft">{text}</p>
+              </div>
+            ))}
+          </div>
+
+          <p class="mt-8 max-w-3xl text-sm text-ink-soft">
+            To turn this research into practice, see
+            <a href="/guides/what-is-generative-engine-optimization/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">what Generative Engine Optimization is</a>,
+            the <a href="/guides/ai-visibility-checklist/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">AI visibility checklist</a>,
+            the <a href="/guides/geo-vs-seo/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">GEO vs SEO comparison</a>, and the
+            <a href="/guides/llms-txt-wordpress/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">llms.txt implementation guide</a>.
+            To see how this evidence becomes the published scoring weights, read the
+            <a href="/methodology/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">scoring methodology</a>.
+          </p>
+        </div>
+
+        <div class="flex items-center rounded-[4px] border border-rail bg-white p-6 lg:p-8">
+          <ResearchSurface variant="light" class="w-full" />
+        </div>
+      </header>
+    </div>
+  </section>
+
+  {/* Sources */}
+  <section class="border-t border-rail bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-16">
+      {/* Type legend — i quattro valori reali del campo `type` in researchContent.ts */}
+      <div class="mb-8 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[4px] border border-rail bg-paper px-4 py-3">
+        <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">src/lib/researchContent.ts · type</span>
+        {[
+          'Peer-reviewed paper',
+          'Benchmark',
+          'Industry report',
+          'Internal analysis',
+        ].map((label) => (
+          <span class="rounded-[2px] border border-rail bg-white px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-mute">{label}</span>
+        ))}
+      </div>
+
+      <div class="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">Sources and findings</h2>
+          <span class="rounded-[2px] border border-rail px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-mute">Traceable scoring</span>
+        </div>
+        <a href="/manifesto/" class="text-sm font-medium text-pass-deep underline decoration-rail underline-offset-4 transition-colors hover:decoration-pass-deep">
+          Read the manifesto
+        </a>
+      </div>
+
+      <div class="space-y-6">
+        {researchSources.map((source) => (
+          <ResearchCard source={source} />
+        ))}
+      </div>
+
+      {/* Closing statement */}
+      <div class="mt-14 max-w-2xl md:mt-20">
+        <blockquote class="border-l-2 border-rail pl-5" cite="https://geoready.dev/research/">
+          <p class="text-sm font-medium italic leading-relaxed text-ink">
+            {researchClosing.statement}
+          </p>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "GEO Research Foundation",
+    "url": "https://geoready.dev/research/",
+    "description": "The peer-reviewed research behind AI search visibility scoring: the Princeton GEO paper (KDD 2024), the 2026 critical survey of GEO, large-scale engine audits, benchmarks such as C-SEO Bench and E-GEO, and the studies on LLM citation behaviour and ranking manipulation.",
+    "author": {
+      "@type": "Organization",
+      "name": "Auriti Labs",
+      "url": "https://github.com/Auriti-Labs"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Auriti Labs",
+      "url": "https://github.com/Auriti-Labs"
+    },
+    "datePublished": "2026-05-12",
+    "dateModified": "2026-09-01",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": researchSources.map((s, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": s.title,
+        "description": s.finding
+      }))
+    }
+  })} />
+</Shell>
